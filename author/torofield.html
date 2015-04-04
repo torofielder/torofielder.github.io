@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="utf-8">
+    <title>torofielder blog</title>
+    <meta name="description" content="">
+    <meta name="author" content="torofield">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
+    <!--[if lt IE 9]>
+    <script src="/theme/html5.js"></script>
+    <![endif]-->
+
+    <!-- Le styles -->
+    <link href="/theme/bootstrap.min.css" rel="stylesheet">
+    <link href="/theme/bootstrap.min.responsive.css" rel="stylesheet">
+    <link href="/theme/local.css" rel="stylesheet">
+    <link href="/theme/pygments.css" rel="stylesheet">
+
+    <!-- So Firefox can bookmark->"abo this site" -->
+
+</head>
+
+<body>
+
+<div class="navbar">
+    <div class="navbar-inner">
+    <div class="container">
+
+         <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+             <span class="icon-bar"></span>
+             <span class="icon-bar"></span>
+             <span class="icon-bar"></span>
+         </a>
+
+        <a class="brand" href="">torofielder blog</a>
+
+        <div class="nav-collapse">
+        <ul class="nav">
+            
+        </ul>
+        </div>
+        
+    </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="content">
+    <div class="row">
+
+        <div class="span9">
+        
+
+        
+
+
+    <div class='article'>
+        <div class="content-title">
+            <a href="/スクリプトごと 文法チェック/整形 ツール　インストールまとめ.html"><h1>スクリプトごと 文法チェック/整形 ツール　インストールまとめ</h1></a>
+日 15 3月 2015
+
+by <a class="url fn" href="/author/torofield.html">torofield</a>
+ 
+
+
+ 
+        </div>
+        
+        <div><div class="section" id="id2">
+<h2>1.はじめに</h2>
+<p>最近、仕事で複数スクリプトを組み合わせてコーディングすることが多くなりました。
+それだと、各スクリプトの癖を忘れたり、そもそもどう書くのか忘れたりと、不良を作りこむ可能性が多くなります。</p>
+<p>しかも、実装する環境自体も、複数ホストを組み合わせる場合も多くなりました。
+その場合に、ホームディレクトリ以外にインストールできないホストで作業することも
+ありえます。</p>
+<p>また、インターネットに直接接続できないホストで作業することもあります。</p>
+<p>と考えると、以下の条件で主に使用するスクリプトの文法チェック(lint)/整形する環境を整える必要があると考えました。</p>
+<ul class="simple">
+<li>主に使用するスクリプト</li>
+</ul>
+<blockquote>
+<ul class="simple">
+<li>perl</li>
+<li>python</li>
+<li>javascript</li>
+<li>HTML</li>
+<li>ruby</li>
+</ul>
+</blockquote>
+<ul>
+<li><p class="first">コマンドで起動する</p>
+<p>IDEを使う方式もありますが、今回はコマンドで起動する方式のみにする。</p>
+</li>
+<li><p class="first">外部ネットワークに接続する方式を避ける</p>
+</li>
+</ul>
+<p>以降で各スクリプトのlint/整形ツールのインストール方法を書いていきます。</p>
+</div>
+<div class="section" id="perl">
+<h2>2.perl</h2>
+<div class="section" id="id3">
+<h3>インストール環境構築</h3>
+<p>まず、外部ネットワークに接続できない場合でも、インストールできる環境を設定します。</p>
+<p>手始めに、cpanmコマンドをインストールします。export部分は.bashrcに入れてもよいです。</p>
+<pre class="literal-block">
+$ export PERL_LOCAL_LIB_ROOT=&quot;$HOME/perl5&quot;;
+$ export PERL5LIB=&quot;$HOME/perl5/x86_64-linux-gnu-thread-multi:$HOME/perl5:$HOME/perl5/lib/perl5&quot;;
+$ export PERL_MM_OPT=&quot;INSTALL_BASE=$HOME/perl5&quot;;
+$ export PATH=&quot;$HOME/perl5/bin:$HOME/mybin:$PATH&quot;;
+$ mkdir ~/mybin &amp;&amp; cd ~/mybin
+$ wget https://raw.github.com/miyagawa/cpanminus/master/cpanm
+$ chmod +x cpanm
+</pre>
+<p>以下を参考にして、その他モジュールをインストールします。</p>
+<p><a class="reference external" href="http://qiita.com/kayama0fa&#64;github/items/27e0c1f19d8484c30896">http://qiita.com/kayama0fa&#64;github/items/27e0c1f19d8484c30896</a></p>
+<pre class="literal-block">
+$ wget http://xrl.us/perlbrewinstall
+$ bash perlbrewinstall
+$ cat &gt;&gt;~/.bashrc_profile
+source $HOME/perl5/perlbrew/etc/bashrc
+$ source $HOME/perl5/perlbrew/etc/bashrc
+$ perlbrew self-upgrade
+$ perlbrew install perl-5.18.4
+(時間がかかる)
+$ perlbrew switch perl-5.18.4
+(cpanmが使用するperlをperlbrewに変更)
+$ vi ~/.cpan/CPAN/MyConfig.pm
+(build_cacheを1000に)
+$ cpan
+&gt; make Perl::Critic
+&gt; make List::MoreUtils
+&gt; make Test::Perl::Critic
+&gt; make YAML
+&gt; make Perl::Tidy
+$ ls -lR ~/.cpan/sources
+$ cd ~/.cpan/sources
+$ tar czf ~/cpan_sources.tar.gz *
+(対象マシンにcpan_source.tar.gzを転送)
+</pre>
+<p>対象マシンにて以下を行います。</p>
+<pre class="literal-block">
+(対象マシンにcpanmをインストール後)
+$ mkdir -p ~/.cpan/sources
+$ cd ~/.cpan/sources ; tar xvfz ~/cpan_sources.tar.gz
+$ cpanm --mirror ~/.cpan/sources Perl::Critic
+$ cpanm --mirror ~/.cpan/sources Test::Perl::Critic
+$ cpanm --mirror ~/.cpan/sources Perl::Tidy
+</pre>
+</div>
+<div class="section" id="perl-critic">
+<h3>文法チェック(Perl::Critic)</h3>
+<p>文法チェックには、 <strong>Perl::Critic</strong> を使用します。以下でlib以下のソースをチェックします。</p>
+<pre class="literal-block">
+$ perlcritic --profile-proto &gt; t/perlcriticrc
+$ vi t/99.-perlcritic.t
+use strict;
+use Test::More;
+
+eval { require Test::Perl::Critic; Test::Perl::Critic-&gt;import(-profile =&gt; &quot;t/perlcriticrc&quot;) };
+plan skip_all =&gt; &quot;Test::Perl::Critic is not installed.&quot; if $&#64;;
+
+all_critic_ok(&quot;lib&quot;);
+</pre>
+<p>手元のコードを確認してみると、以下のようになります。</p>
+<pre class="literal-block">
+$ perl t/99-perlcritic.t
+not ok - Test::Perl::Critic for &quot;lib/Smart/Comments.pm&quot;
+#   Failed test 'Test::Perl::Critic for &quot;lib/Smart/Comments.pm&quot;'
+#   at /home/tanino/perl5/lib/perl5/Test/Perl/Critic.pm line 104.
+#
+#   Code before strictures are enabled at line 3, column 1.  See page 429 of PBP.  (Severity: 5)
+#   Stricture disabled at line 78, column 9.  See page 429 of PBP.  (Severity: 5)
+#   Expression form of &quot;eval&quot; at line 153, column 19.  See page 161 of PBP.  (Severity: 5)
+1..1
+</pre>
+</div>
+<div class="section" id="perltidy">
+<h3>整形(perltidy)</h3>
+<p>整形は <strong>perltidy</strong> というコマンドを使用します。例として、s3.pl(ファイル名)にperltidyをかけると、s3.pl.tdyというファイルを生成します。</p>
+<p>$HOME/.perltidyrcに以下のように書いておきます。</p>
+<pre class="literal-block">
+-l=78   # Max line width is 78 cols
+-i=4    # Indent level is 4 cols
+-ci=4   # Continuation indent is 4 cols
+-se     # Errors to STDERR
+-vt=2   # Maximal vertical tightness
+-cti=0  # No extra indentation for closing brackets
+-pt=1   # Medium parenthesis tightness
+-bt=1   # Medium brace tightness
+-sbt=1  # Medium square brace tightness
+-bbt=1  # Medium block brace tightness
+-nsfs   # No space before semicolons
+-nolq   # Don't outdent long quoted strings
+-wbb=&quot;% + - * / x != == &gt;= &lt;= =~ !~ &lt; &gt; | &amp; &gt;= &lt; = **= += *= &amp;= &lt;&lt;= &amp;&amp;= -= /= |= &gt;&gt;= ||= .= %= ^= x=&quot;
+# Break before all operators
+</pre>
+<p>実行例は以下の通りです。</p>
+<pre class="literal-block">
+$ perltidy s3.pl
+$ ls -l s3.pl.tdy
+s3.pl.tdy
+</pre>
+<p>ソースを直接編集するなら-bをつけます。</p>
+<pre class="literal-block">
+$ perltidy -b s3.pl
+(直接変更)
+</pre>
+</div>
+</div>
+<div class="section" id="python">
+<h2>3.python</h2>
+<p>pythonのバージョンは2.7を仮定しています。</p>
+<div class="section" id="id4">
+<h3>インストール環境構築</h3>
+<p>まずは、インストール環境を構築します。PYTHONPATH/PATHは.bashrcに記述しても動作します。</p>
+<pre class="literal-block">
+    $ export PYTHONPATH=$HOME/.local/lib/python2.7/site-packages
+    $ export PATH=$HOME/.local/bin:$PATH
+    $ wget https://bootstrap.pypa.io/get-pip.py
+(get-pip.pyを対象ホストにダウンロード)
+    $ python get-pip.py --user
+    $ echo &quot;pip&quot; &gt; $HOME/.local/lib/python2.7/site-packages/pip.pth
+</pre>
+</div>
+<div class="section" id="pylint">
+<h3>pylint</h3>
+<p>pylintは、pythonの文法チェックツールです。
+以下のようにインストール/設定します。</p>
+<pre class="literal-block">
+$ wget https://pypi.python.org/packages/source/p/pylint/pylint-1.4.1.tar.gz
+$ wget https://pypi.python.org/packages/source/a/astroid/astroid-1.3.4.tar.gz
+$ wget https://pypi.python.org/packages/source/l/logilab-common/logilab-common-0.63.2.tar.gz
+$ wget https://pypi.python.org/packages/source/l/logilab-astng/logilab-astng-0.24.3.tar.gz
+$ pip install pylint-1.4.1.tar.gz --user
+$ pylint --generate-rcfile &gt; ~/.pylintrc
+</pre>
+<p>テスト対象は <a class="reference external" href="http://bottlepy.org/">bottle</a> にしました。
+pylintを起動すると以下のようになります。</p>
+<pre class="literal-block">
+$ wget http://bottlepy.org/bottle.py
+$ pylint bottle.py
+Warning: option include-ids is deprecated and ignored.
+Warning: option symbols is deprecated and ignored.
+************* Module bottle
+W:902, 0: TODO: Handle these explicitly in handle() or make them iterable. (fixme)
+(中略)
+Global evaluation
+-----------------
+Your code has been rated at 6.64/10
+</pre>
+</div>
+<div class="section" id="pythontidy">
+<h3>整形ツール(PythonTidy)</h3>
+<p>整形ツールには、PythonTidyが使えます。
+以下のようにインストールします。</p>
+<pre class="literal-block">
+$ wget http://lacusveris.com/PythonTidy/PythonTidy-1.22.python
+$ mv PythonTidy-1.22.python pythontidy.py
+$ chmod +x pythontidy.py
+</pre>
+<p>以下のようなテストコードを書いてみます。</p>
+<pre class="literal-block">
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+from bottle import route, run
+
+#テスト用コード
+&#64;route('/hello')
+def hello():
+&quot;&quot;&quot; テスト実装
+&quot;&quot;&quot;
+return &quot;Hello World!&quot;
+
+#テスト用起動
+run(host='0.0.0.0', port=8080, debug=True, reloader=True)
+</pre>
+<p>pythontidyを通した結果、以下になりました。
+&quot;&quot;&quot;をコメントに使用してみましたが、少々ずれているようです。</p>
+<pre class="literal-block">
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
+from bottle import route, run
+
+
+# テスト用コード
+
+&#64;route('/hello')
+def hello():
+&quot;&quot;&quot; テスト実装
+  &quot;&quot;&quot;
+
+return 'Hello World!'
+
+# テスト用起動
+run(host='0.0.0.0', port=8080, debug=True, reloader=True)
+</pre>
+<p>また、pythontidyに設定はありませんが、ソース内で以下のように変更すると、「# 」行の後にコメントを入れないようになります。(私は入れない方が好みなので、以下のように変更しました)</p>
+<pre class="literal-block">
+*** ./PythonTidy-1.22.python    2012-03-05 14:01:50.000000000 +0900
+--- ./pythontidy.py     2015-03-01 17:30:17.412985330 +0900
+***************
+*** 320,326 ****
+  BOILERPLATE = NULL  # 2007 Mar 06
+  BLANK_LINE = NULL
+  KEEP_BLANK_LINES = True
+! ADD_BLANK_LINES_AROUND_COMMENTS = True
+  MAX_SEPS_FUNC_DEF = 3  # 2007 May 24
+  MAX_SEPS_FUNC_REF = 5  # 2007 May 24
+  MAX_SEPS_SERIES = 5  # 2007 May 24
+--- 320,326 ----
+  BOILERPLATE = NULL  # 2007 Mar 06
+  BLANK_LINE = NULL
+  KEEP_BLANK_LINES = True
+! ADD_BLANK_LINES_AROUND_COMMENTS = False
+  MAX_SEPS_FUNC_DEF = 3  # 2007 May 24
+  MAX_SEPS_FUNC_REF = 5  # 2007 May 24
+  MAX_SEPS_SERIES = 5  # 2007 May 24
+</pre>
+</div>
+</div>
+<div class="section" id="javascript">
+<h2>4.javascript</h2>
+<p>JSHint</p>
+<p>nodejs</p>
+<p><a class="reference external" href="http://nodejs.org/dist/v0.12.0/node-v0.12.0-linux-x64.tar.gz">http://nodejs.org/dist/v0.12.0/node-v0.12.0-linux-x64.tar.gz</a></p>
+<p>curl <a class="reference external" href="https://npmjs.org/install.sh">https://npmjs.org/install.sh</a></p>
+<p><a class="reference external" href="https://github.com/jshint/jshint/raw/master/dist/jshint.js">https://github.com/jshint/jshint/raw/master/dist/jshint.js</a></p>
+<p>$ wget <a class="reference external" href="http://nodejs.org/dist/node-v0.2.3.tar.gz">http://nodejs.org/dist/node-v0.2.3.tar.gz</a>
+$ tar -xvzf node-v0.2.3.tar.gz
+$ cd node-v0.2.3
+$ ./configure
+$ make
+$ sudo make install
+必要なパッケージはもちろん環境によって違う。上記はUbuntu10.04の初期状態の場合。make testをする場合には、さらにapache2-utilsをinstallしておく必要がある。
+npmは作者が推奨しているやり方が3通り、推奨していないやり方(sudoで実行しちゃう方法)が1通りある。
+1. /usr/local以下をrootではなく自分のものにしてしまう方法。自分しか触らないマシンならいいんじゃねって話。</p>
+<p>$ sudo chown -R $USER /usr/local
+node本体をインストール
+$ curl <a class="reference external" href="http://npmjs.org/install.sh">http://npmjs.org/install.sh</a> | sh
+一行目をnode本体のインストール前にやり、node本体のインストールの最後のsudoは付けない。</p>
+<p>2. node本体を$HOME/local以下にインストールしておく方法
+上述のnodeのインストールで./configureに--prefix=~/localのオプションを指定してやる。そうやってnode本体をインストールした後に</p>
+<p>$ curl <a class="reference external" href="http://npmjs.org/install.sh">http://npmjs.org/install.sh</a> | sh
+を実行すればいい。</p>
+<p>3. npmのインストール先を指定しておく方法
+node本体は上述の方法でインストールしておく。</p>
+<p>まず設定
+$ cat &gt;&gt;~/.npmrc &lt;</p>
+</div>
+</div>
+        <hr />
+    </div>
+		
+<div class="pagination">
+<ul>
+    <li class="prev disabled"><a href="#">&larr; Previous</a></li>
+
+    <li class="active"><a href="/author/torofield.html">1</a></li>
+
+    <li class="next disabled"><a href="#">&rarr; Next</a></li>
+
+</ul>
+</div>
+ 
+  
+        </div>
+        
+        <div class="span3">
+
+            <div class="well" style="padding: 8px 0; background-color: #FBFBFB;">
+            <ul class="nav nav-list">
+                <li class="nav-header"> 
+                Site
+                </li>
+            
+                <li><a href="/archives.html">Archives</a>
+                <li><a href="/tags.html">Tags</a>
+
+
+
+
+            </ul>
+            </div>
+
+
+            <div class="well" style="padding: 8px 0; background-color: #FBFBFB;">
+            <ul class="nav nav-list">
+                <li class="nav-header"> 
+                Categories
+                </li>
+                
+                <li><a href="/category/pelican-python-perl-javascript.html">Pelican python perl javascript</a></li>
+                   
+            </ul>
+            </div>
+
+
+            <div class="well" style="padding: 8px 0; background-color: #FBFBFB;">
+            <ul class="nav nav-list">
+                <li class="nav-header"> 
+                Links
+                </li>
+            
+                <li><a href="http://getpelican.com/">Pelican</a></li>
+                <li><a href="http://python.org/">Python.org</a></li>
+                <li><a href="http://jinja.pocoo.org/">Jinja2</a></li>
+                <li><a href="#">You can modify those links in your config file</a></li>
+            </ul>
+            </div>
+
+
+            <div class="social">
+            <div class="well" style="padding: 8px 0; background-color: #FBFBFB;">
+            <ul class="nav nav-list">
+                <li class="nav-header"> 
+                Social
+                </li>
+           
+                <li><a href="#">You can add links in your config file</a></li>
+                <li><a href="#">Another social link</a></li>
+            </ul>
+            </div>
+            </div>
+
+        </div>  
+    </div>     </div> 
+<footer>
+<br />
+<p><a href="">torofielder blog</a> &copy; torofield 2015</p>
+</footer>
+
+</div> <!-- /container -->
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+<script src="/theme/bootstrap-collapse.js"></script>
+ 
+</body>
+</html>
