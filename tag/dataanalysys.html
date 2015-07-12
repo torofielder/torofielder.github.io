@@ -51,10 +51,96 @@
     <div class="row">
 
         <div class="span9">
-<ul>
-    <li><a href="/tag/dataanalysys.html">dataanalysys</a></li>
-    <li><a href="/tag/pelican-python-perl-javascript.html">Pelican python perl javascript</a></li>
+        
+
+        
+
+
+    <div class='article'>
+        <div class="content-title">
+            <a href="/icinga2 icinga web2 opentsdb grafana.html"><h1>icinga2 + icinga web2 + opentsdb + grafanaを使用したお手軽監視システム</h1></a>
+日 12 7月 2015
+
+by <a class="url fn" href="/author/torofield.html">torofield</a>
+ 
+
+
+ 
+        </div>
+        
+        <div><div class="section" id="id1">
+<h2>1.はじめに</h2>
+<p>お仕事で監視ツールの調査をしていました。調べてみると、最近の監視システムは
+以下の感じのようです。</p>
+<ul class="simple">
+<li>旧来からある安定したツール(zabbix,nagios)</li>
+<li>Web UIが綺麗な先進的ツール(Munin,icinga2)</li>
+<li>次世代監視ツール Sensu Consul</li>
 </ul>
+</div>
+</div>
+        <hr />
+    </div>
+		
+
+ 
+        
+
+ 
+
+    <div class='article'>
+        <a href="/kibana4 elasticsearch fluentd dstat ruby td-agent.html"><h2>kibana4 + elasticsearch + fluentd のdstatデータ</h2></a>
+        <div class= "well small"> 土 25 4月 2015
+
+by <a class="url fn" href="/author/torofield.html">torofield</a>
+ 
+
+
+ </div>
+        <div class="summary"><div class="section" id="id1">
+<h2>1.はじめに</h2>
+<p>仕事でkibana関連の調査をしたことがあります。</p>
+<p>その際、kibanaのインストール自体は簡単でしたが、そこからグラフデータを表示するまでが、やたらと苦労しました。</p>
+<p>kibanaのデータ表示の実例までは、検索しても出てこなかったので
+書いておこうと思います。</p>
+<p>主にkibanaでのグラフデータ表示をどのように設定するかを中心に書きたいと思います。</p>
+<div class="section" id="id2">
+<h3>概要</h3>
+<pre class="literal-block">
+td-agent -&gt; elastic search -&gt; kibana4
+</pre>
+</div>
+</div>
+<div class="section" id="id3">
+<h2>2.インストール</h2>
+<p>インストールするプログラムは以下の通りです。OSはubuntu 14.04を使用しています。</p>
+<ul class="simple">
+<li>JDK(インストール方法は割愛)</li>
+<li>Fluentd(td-agent)</li>
+<li>elasticsearch</li>
+<li>kibana4</li>
+</ul>
+<div class="section" id="fluentd-td-agent">
+<h3>Fluentd(td-agent)</h3>
+<p>td-agentとはfluentd環境全部を格納したパッケージです。</p>
+<p>td-agent、および、使用するpluginのインストール方法は以下の通りです。</p>
+<pre class="literal-block">
+$ curl -L http://toolbelt.treasuredata.com/sh/install-ubuntu-trusty-td-agent2.sh | sh
+$ /usr/sbin/td-agent-gem install fluent-plugin-elasticsearch fluent-plugin-dstat ...</pre></div></div> <a class="btn btn-info xsmall" href="/kibana4 elasticsearch fluentd dstat ruby td-agent.html">read more</a></div>
+    </div>	
+				
+<div class="pagination">
+<ul>
+    <li class="prev disabled"><a href="#">&larr; Previous</a></li>
+
+    <li class="active"><a href="/tag/dataanalysys.html">1</a></li>
+
+    <li class="next disabled"><a href="#">&rarr; Next</a></li>
+
+</ul>
+</div>
+ 
+  
         </div>
         
         <div class="span3">

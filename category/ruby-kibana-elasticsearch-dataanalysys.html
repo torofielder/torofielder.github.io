@@ -58,8 +58,8 @@
 
     <div class='article'>
         <div class="content-title">
-            <a href="/icinga2 icinga web2 opentsdb grafana.html"><h1>icinga2 + icinga web2 + opentsdb + grafanaを使用したお手軽監視システム</h1></a>
-日 12 7月 2015
+            <a href="/kibana4 elasticsearch fluentd dstat ruby td-agent.html"><h1>kibana4 + elasticsearch + fluentd のdstatデータ</h1></a>
+土 25 4月 2015
 
 by <a class="url fn" href="/author/torofield.html">torofield</a>
  
@@ -69,35 +69,6 @@ by <a class="url fn" href="/author/torofield.html">torofield</a>
         </div>
         
         <div><div class="section" id="id1">
-<h2>1.はじめに</h2>
-<p>お仕事で監視ツールの調査をしていました。調べてみると、最近の監視システムは
-以下の感じのようです。</p>
-<ul class="simple">
-<li>旧来からある安定したツール(zabbix,nagios)</li>
-<li>Web UIが綺麗な先進的ツール(Munin,icinga2)</li>
-<li>次世代監視ツール Sensu Consul</li>
-</ul>
-</div>
-</div>
-        <hr />
-    </div>
-		
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="/kibana4 elasticsearch fluentd dstat ruby td-agent.html"><h2>kibana4 + elasticsearch + fluentd のdstatデータ</h2></a>
-        <div class= "well small"> 土 25 4月 2015
-
-by <a class="url fn" href="/author/torofield.html">torofield</a>
- 
-
-
- </div>
-        <div class="summary"><div class="section" id="id1">
 <h2>1.はじめに</h2>
 <p>仕事でkibana関連の調査をしたことがあります。</p>
 <p>その際、kibanaのインストール自体は簡単でしたが、そこからグラフデータを表示するまでが、やたらと苦労しました。</p>
@@ -126,70 +97,95 @@ td-agent -&gt; elastic search -&gt; kibana4
 <p>td-agent、および、使用するpluginのインストール方法は以下の通りです。</p>
 <pre class="literal-block">
 $ curl -L http://toolbelt.treasuredata.com/sh/install-ubuntu-trusty-td-agent2.sh | sh
-$ /usr/sbin/td-agent-gem install fluent-plugin-elasticsearch fluent-plugin-dstat ...</pre></div></div> <a class="btn btn-info xsmall" href="/kibana4 elasticsearch fluentd dstat ruby td-agent.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="/スクリプトごと 文法チェック/整形 ツール　インストールまとめ.html"><h2>スクリプトごと 文法チェック/整形 ツール　インストールまとめ</h2></a>
-        <div class= "well small"> 日 15 3月 2015
-
-by <a class="url fn" href="/author/torofield.html">torofield</a>
- 
-
-
- </div>
-        <div class="summary"><div class="section" id="id2">
-<h2>1.はじめに</h2>
-<p>最近、仕事で複数スクリプトを組み合わせてコーディングすることが多くなりました。
-それだと、各スクリプトの癖を忘れたり、そもそもどう書くのか忘れたりと、不良を作りこむ可能性が多くなります。</p>
-<p>しかも、実装する環境自体も、複数ホストを組み合わせる場合も多くなりました。
-その場合に、ホームディレクトリ以外にインストールできないホストで作業することも
-ありえます。</p>
-<p>また、インターネットに直接接続できないホストで作業することもあります。</p>
-<p>と考えると、以下の条件で主に使用するスクリプトの文法チェック(lint)/整形する環境を整える必要があると考えました。</p>
-<ul class="simple">
-<li>主に使用するスクリプト</li>
-</ul>
-<blockquote>
-<ul class="simple">
-<li>perl</li>
-<li>python</li>
-<li>javascript</li>
-<li>HTML</li>
-<li>ruby</li>
-</ul>
-</blockquote>
-<ul>
-<li><p class="first">コマンドで起動する</p>
-<p>IDEを使う方式もありますが、今回はコマンドで起動する方式のみにする。</p>
-</li>
-<li><p class="first">外部ネットワークに接続する方式を避ける</p>
-</li>
-</ul>
-<p>以降で各スクリプトのlint/整形ツールのインストール方法を書いていきます。</p>
-</div>
-<div class="section" id="perl">
-<h2>2.perl</h2>
-<div class="section" id="id3">
-<h3>インストール環境構築</h3>
-<p>まず、外部ネットワークに接続できない場合でも、インストールできる環境を設定します。</p>
-<p>手始めに、cpanmコマンドをインストールします。export部分は.bashrcに入れてもよいです。</p>
+$ /usr/sbin/td-agent-gem install fluent-plugin-elasticsearch fluent-plugin-dstat
+</pre>
+<p>参考URL
+<a class="reference external" href="http://blog.nomadscafe.jp/2014/03/dstat-fluentd-elasticsearch-kibana.html">http://blog.nomadscafe.jp/2014/03/dstat-fluentd-elasticsearch-kibana.html</a></p>
+<p>以下の設定で、elastic searchにdstatのデータを格納します。</p>
 <pre class="literal-block">
-$ export PERL_LOCAL_LIB_ROOT=&quot;$HOME/perl5&quot;;
-$ export PERL5LIB=&quot;$HOME/perl5 ...</pre></div></div> <a class="btn btn-info xsmall" href="/スクリプトごと 文法チェック/整形 ツール　インストールまとめ.html">read more</a></div>
-    </div>	
-				
+## OS Performance
+&lt;source&gt;
+        type dstat
+        tag perf.dstat
+        option -lcmdn     # ←ロードアベレージ、CPU、メモリ、ディスクIO、ネットワーク(Byte)の収集
+        delay 1               # ←周期の設定です（単位は秒）
+&lt;/source&gt;
+
+## ElasticSearch Insert
+&lt;match perf.**&gt;
+  type elasticsearch
+  type_name performance
+  include_tag_key true
+  tag_key tag
+  host 127.0.0.1
+  port 9200
+  logstash_format true
+  logstash_prefix perf
+  flush_interval 1s
+&lt;/match&gt;
+</pre>
+</div>
+<div class="section" id="elasticsearch">
+<h3>elasticsearch</h3>
+<pre class="literal-block">
+# wget -O - http://packages.elasticsearch.org/GPG-KEY-elasticsearch | apt-key add -
+# echo 'deb http://packages.elasticsearch.org/elasticsearch/1.4/debian stable main' | sudo tee /etc/apt/sources.list.d/elasticsearch.list
+# sudo apt-get update
+# apt-get -y install elasticsearch
+# service elasticsearch restart
+</pre>
+</div>
+<div class="section" id="id4">
+<h3>elasticsearchのインデックス・テンプレート</h3>
+<p>参考URL
+<a class="reference external" href="https://www.digitalocean.com/community/tutorials/how-to-install-elasticsearch-logstash-and-kibana-4-on-ubuntu-14-04">https://www.digitalocean.com/community/tutorials/how-to-install-elasticsearch-logstash-and-kibana-4-on-ubuntu-14-04</a></p>
+</div>
+<div class="section" id="kibana4">
+<h3>kibana4</h3>
+<pre class="literal-block">
+# mkdir /opt/kibana ; cd /opt/kibana
+# wget https://download.elasticsearch.org/kibana/kibana/kibana-4.0.2-linux-x64.tar.gz
+# tar xvf kibana-*.tar.gz
+# mv kibana-4.0.2-linux-x64/* .
+# cd /etc/init.d &amp;&amp; sudo wget https://gist.githubusercontent.com/thisismitch/8b15ac909aed214ad04a/raw/bce61d85643c2dcdfbc2728c55a41dab444dca20/kibana4
+# chmod +x /etc/init.d/kibana4
+# update-rc.d kibana4 defaults 96 9
+# service kibana4 start
+wget https://download.elasticsearch.org/kibana/kibana/kibana-4.0.1-linux-x64.tar.gz
+</pre>
+<pre class="literal-block">
+## OS Performance
+&lt;source&gt;
+  type dstat
+  tag perf.dstat
+  option -lcmdn     # ←ロードアベレージ、CPU、メモリ、ディスクIO、ネットワーク(Byte)の収集
+  delay 1               # ←周期の設定です（単位は秒）
+&lt;/source&gt;
+
+## ElasticSearch Insert
+&lt;match perf.**&gt;
+  type elasticsearch
+  type_name performance
+  include_tag_key true
+  tag_key tag
+  host 127.0.0.1
+  port 9200
+  logstash_format true
+  logstash_prefix perf
+  flush_interval 1s
+&lt;/match&gt;
+</pre>
+</div>
+</div>
+</div>
+        <hr />
+    </div>
+		
 <div class="pagination">
 <ul>
     <li class="prev disabled"><a href="#">&larr; Previous</a></li>
 
-    <li class="active"><a href="/author/torofield.html">1</a></li>
+    <li class="active"><a href="/category/ruby-kibana-elasticsearch-dataanalysys.html">1</a></li>
 
     <li class="next disabled"><a href="#">&rarr; Next</a></li>
 
