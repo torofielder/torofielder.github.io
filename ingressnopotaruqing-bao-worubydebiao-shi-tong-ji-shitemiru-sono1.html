@@ -51,30 +51,41 @@
     <div class="row">
 
         <div class="span9">
-        
-
-        
-
-
     <div class='article'>
         <div class="content-title">
-            <a href="/Ingressのポータル情報をrubyで表示/統計してみる その1.html"><h1>Ingressのポータル情報をrubyで表示/統計してみる その1</h1></a>
+            <h1>Ingressのポータル情報をrubyで表示/統計してみる その1</h1>
 月 17 8月 2015
 
 by <a class="url fn" href="/author/torofield.html">torofield</a>
  
 
 
- 
         </div>
-        
-        <div><div class="section" id="id1">
-<h2>1.はじめに</h2>
+	
+        <div>
+<div class="document" id="ingressruby-1">
+<h1 class="title">Ingressのポータル情報をrubyで表示/統計してみる その1</h1>
+<table class="docinfo" frame="void" rules="none">
+<col class="docinfo-name" />
+<col class="docinfo-content" />
+<tbody valign="top">
+<tr class="field"><th class="docinfo-name">slug:</th><td class="field-body">Ingressのポータル情報をrubyで表示/統計してみる その1</td>
+</tr>
+<tr><th class="docinfo-name">Date:</th>
+<td>2015-08-17 21:30</td></tr>
+<tr class="field"><th class="docinfo-name">category:</th><td class="field-body">ruby ingress</td>
+</tr>
+<tr class="field"><th class="docinfo-name">tags:</th><td class="field-body">ingress ruby API javascript</td>
+</tr>
+</tbody>
+</table>
+<div class="section" id="id1">
+<h1>1.はじめに</h1>
 <p>2014年からIngressというゲームをしています。</p>
 <p>Ingressを続けている理由は、主に健康のため(のつもり)ですが、それだけでは、
 理由が不明確で、モチベーションに欠けるのも確かです。</p>
 <p>なので、最近はIngress内のポータル <a class="footnote-reference" href="#id3" id="id2">[1]</a> 維持を(勝手に)目標にしています。</p>
-<p>そうなると、ポータルを誰がどのぐらい維持できているのかが気になってきました。</p>
+<p>そうなると、ポータルを誰がどのぐらい維持できている(Ingress的にはowner)のかが気になってきました。</p>
 <p>なので、ポータルの情報を取得し、統計を取ってみようと考えました。
 最近の仕事では、スクリプト言語を使用することが多いため、rubyで処理してみようと思います。</p>
 <table class="docutils footnote" frame="void" id="id3" rules="none">
@@ -85,7 +96,7 @@ by <a class="url fn" href="/author/torofield.html">torofield</a>
 </table>
 </div>
 <div class="section" id="id4">
-<h2>2.ポータル情報の表示/統計を取るまでの方法</h2>
+<h1>2.ポータル情報の表示/統計を取るまでの方法</h1>
 <p>ポータル情報の表示/統計を取るまでの方法は(現状で)以下を考えています。</p>
 <ul class="simple">
 <li>ポータル情報の取得</li>
@@ -95,7 +106,7 @@ by <a class="url fn" href="/author/torofield.html">torofield</a>
 <p>その1では「ポータル情報の取得」を記述し、その他はその2以降で記述したいと思います。</p>
 </div>
 <div class="section" id="id5">
-<h2>3.ポータル情報の取得</h2>
+<h1>3.ポータル情報の取得</h1>
 <p>ポータル情報を取ってみたいと思っても、最初は方法が思いつきませんでした。Ingressというゲームは、2015/08/17現在では、APIを公開していません。</p>
 <p>とりあえず、いろいろググったり、 <a class="reference external" href="https://www.ingress.com/intel">Ingress Intel Map</a> の通信内容を解析したりしてみたところ、どうやら、「getPortalDetails」というのがIngressのポータル情報を取得するAPIのようでした。</p>
 <p>そこから逆算して、既存のライブラリ等を調査した結果、以下の方式でできるようです。</p>
@@ -104,7 +115,7 @@ by <a class="url fn" href="/author/torofield.html">torofield</a>
 <li>rintelライブラリでポータル情報取得</li>
 </ul>
 <div class="section" id="link-url">
-<h3>ポータルlink URL取得</h3>
+<h2>ポータルlink URL取得</h2>
 <p>「ポータルlink URL」とは、Ingressのポータル情報を表示した際のURLです。具体的には以下の操作で取得できます。</p>
 <ul class="simple">
 <li>1.https://www.ingress.com/intelにアクセスする</li>
@@ -118,7 +129,7 @@ https://www.ingress.com/intel?ll=35.476274,139.629552&amp;z=17&amp;pll=35.474809
 </pre>
 </div>
 <div class="section" id="rintel">
-<h3>rintelライブラリでポータル情報取得</h3>
+<h2>rintelライブラリでポータル情報取得</h2>
 <p>実際にポータル情報を取得するライブラリはrintel(<a class="reference external" href="https://github.com/sugyan/rintel">https://github.com/sugyan/rintel</a>)を使用しました。</p>
 <p>以下の感じでサンプルプログラムを作成しました。portal_info.rbファイルとして、対象のディレクトリに保存してください。</p>
 <p>といっても、LOAD_PATHを付け加えただけで、examplesにあるportal_info.rbからは、特別な修正はしていません。</p>
@@ -189,7 +200,7 @@ end
 </pre>
 </div>
 <div class="section" id="id6">
-<h3>ポータル情報取得手順</h3>
+<h2>ポータル情報取得手順</h2>
 <p>実際のポータル情報手順は以下の通りです。以下ではrbenvを使用していますが、説明は割愛します。</p>
 <p>portal_info.rbの引数に、「ポータルlink URL」を設定してください。以下の例では、最寄り駅のURLを使用していますが、「ポータルlink URL」であれば、なんでも構いません。</p>
 <pre class="literal-block">
@@ -217,9 +228,9 @@ mods  :
 </div>
 </div>
 <div class="section" id="id7">
-<h2>4.動作原理、および苦労した点</h2>
+<h1>4.動作原理、および苦労した点</h1>
 <div class="section" id="id8">
-<h3>動作原理について</h3>
+<h2>動作原理について</h2>
 <p>portal_infoの動作は以下のようになっています。</p>
 <ul class="simple">
 <li>google(Ingress Intel Map)ログイン</li>
@@ -235,7 +246,7 @@ mods  :
 <p>取り出したEntityから、実際のポータル情報の元となるGUIDを取得後、getPortalDetailsを呼び出して具体的な値を取得するようです。</p>
 </div>
 <div class="section" id="id9">
-<h3>苦労した点</h3>
+<h2>苦労した点</h2>
 <p>なかなかに苦労した点は以下でした。</p>
 <ul class="simple">
 <li>どこから手を付けていいか不明</li>
@@ -249,13 +260,13 @@ mods  :
 </blockquote>
 </div>
 <div class="section" id="id10">
-<h3>どこから手を付けていいか不明</h3>
+<h2>どこから手を付けていいか不明</h2>
 <p>まずはどこから手を付けていいか途方に暮れていました。が、どうやら「getPortalDetails」という関数を使うらしいということが分かってからは、案外簡単に行きました。</p>
 </div>
 <div class="section" id="google">
-<h3>googleにログインできない</h3>
+<h2>googleにログインできない</h2>
 <p>rintelというライブラリを調べて、サンプルプログラムを動作させるのが苦労しました。
-そもそもIngressはAPIを公開していないため、プログラムを作成した時点の動作に合わせざるを得ず、時間が経過すると動作しなくなるのはしょうがないところです。</p>
+そもそもIngressはAPIを公開していないため、プログラムを作成した現在の動作に合わせざるを得ず、時間が経過すると動作しなくなるのはしょうがないところです。</p>
 <p>サンプル(portal_info.rb)を起動したところ、いきなり起動に失敗しました。起動できない理由は、そもそも、googleにログインできていないようだと、あたりを付けて調査した結果、やっと理由が分かりました。</p>
 <p>googleにログインする際のHTML(一部)は以下なのですが、formのaction(<strong>AccountLoginInfo</strong>)と実際にログインするURL(<strong>ServiceLoginAuth</strong>)が違うためにログインできなかったようです。</p>
 <pre class="literal-block">
@@ -270,7 +281,7 @@ mods  :
 <p>このようになってる理由は、CSRF対策だと思いますが、実際のHTMLを見るまでログインできない理由が理解できず、苦労しました。</p>
 </div>
 <div class="section" id="tile-key">
-<h3>tile_keyの計算が不正</h3>
+<h2>tile_keyの計算が不正</h2>
 <p>もう一つは、tile_keyの計算が不正だったことです。</p>
 <p>tile_keyの計算がIngress Intel Mapと異なること自体、理解するのに苦労しました。
 結局Ingress Intel MapでのHTTP通信結果から逆算して理解しました。</p>
@@ -284,31 +295,21 @@ mods  :
 </table>
 </div>
 <div class="section" id="pull-requestmerge">
-<h3>修正はPull Request後にmerge済み</h3>
+<h2>修正はPull Request後にmerge済み</h2>
 <p>修正内容は、Pull Requestを出したら、ほぼすぐにmergeされ、パッチとして取り込まれています。</p>
 </div>
 </div>
 <div class="section" id="id13">
-<h2>5.終わりに</h2>
+<h1>5.終わりに</h1>
 <p>手を付けた時は、もっとかかるかと思いましたが、意外と早くできました。</p>
 <p>次は、情報をDB等に格納し、統計表示するまでしていきたいと思います。</p>
 </div>
 </div>
-        <hr />
-    </div>
-		
-<div class="pagination">
-<ul>
-    <li class="prev disabled"><a href="#">&larr; Previous</a></li>
-
-    <li class="active"><a href="/category/ruby-ingress.html">1</a></li>
-
-    <li class="next disabled"><a href="#">&rarr; Next</a></li>
-
-</ul>
 </div>
- 
-  
+	
+        <hr>
+
+    </div>
         </div>
         
         <div class="span3">
@@ -335,6 +336,7 @@ mods  :
                 Categories
                 </li>
                 
+                <li><a href="/category/misc.html">misc</a></li>
                 <li><a href="/category/monitoring-dataanalysys.html">monitoring dataanalysys</a></li>
                 <li><a href="/category/pelican-python-perl-javascript.html">Pelican python perl javascript</a></li>
                 <li><a href="/category/ruby-ingress.html">ruby ingress</a></li>

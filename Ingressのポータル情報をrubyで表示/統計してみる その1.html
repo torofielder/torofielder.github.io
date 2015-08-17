@@ -66,14 +66,19 @@ by <a class="url fn" href="/author/torofield.html">torofield</a>
 <h2>1.はじめに</h2>
 <p>2014年からIngressというゲームをしています。</p>
 <p>Ingressを続けている理由は、主に健康のため(のつもり)ですが、それだけでは、
-理由が不明確で、モチベーションにかけるのも確かです。</p>
-<p>なので、最近はIngress内のポータル[#]_維持を(勝手に)目標にしています。</p>
-<p>そうなると、ポータルを誰がどのぐらい維持できている(Ingress的にはownerである)のかが気になってきました。</p>
+理由が不明確で、モチベーションに欠けるのも確かです。</p>
+<p>なので、最近はIngress内のポータル <a class="footnote-reference" href="#id3" id="id2">[1]</a> 維持を(勝手に)目標にしています。</p>
+<p>そうなると、ポータルを誰がどのぐらい維持できているのかが気になってきました。</p>
 <p>なので、ポータルの情報を取得し、統計を取ってみようと考えました。
 最近の仕事では、スクリプト言語を使用することが多いため、rubyで処理してみようと思います。</p>
-<!-- [#} ポータルとは、Ingress的に「記念碑や壁画、郵便局や学校といった公共施設、コンビニなど現実に存在するもの」で、ポータルをハックしたり、攻撃したりして、自分のポータルにできる。 -->
+<table class="docutils footnote" frame="void" id="id3" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id2">[1]</a></td><td>ポータルとは、Ingress的に「記念碑や壁画、郵便局や学校といった公共施設、コンビニなど現実に存在するもの」で、ポータルをハックしたり、攻撃したりして、自分のポータルにできる。</td></tr>
+</tbody>
+</table>
 </div>
-<div class="section" id="id2">
+<div class="section" id="id4">
 <h2>2.ポータル情報の表示/統計を取るまでの方法</h2>
 <p>ポータル情報の表示/統計を取るまでの方法は(現状で)以下を考えています。</p>
 <ul class="simple">
@@ -81,12 +86,12 @@ by <a class="url fn" href="/author/torofield.html">torofield</a>
 <li>ポータル情報の格納/表示</li>
 <li>ポータル情報の統計計算</li>
 </ul>
+<p>その1では「ポータル情報の取得」を記述し、その他はその2以降で記述したいと思います。</p>
 </div>
-<div class="section" id="id3">
+<div class="section" id="id5">
 <h2>3.ポータル情報の取得</h2>
 <p>ポータル情報を取ってみたいと思っても、最初は方法が思いつきませんでした。Ingressというゲームは、2015/08/17現在では、APIを公開していません。</p>
-<p>とりあえず、いろいろググったり、[Ingress Intel Map]_の通信内容を解析したりしてみたところ、どうやら、「getPortalDetails」というのがIngressのポータル情報を取得するAPIのようでした。</p>
-<!-- [Ingress Intel Map] https://www.ingress.com/intel -->
+<p>とりあえず、いろいろググったり、 <a class="reference external" href="https://www.ingress.com/intel">Ingress Intel Map</a> の通信内容を解析したりしてみたところ、どうやら、「getPortalDetails」というのがIngressのポータル情報を取得するAPIのようでした。</p>
 <p>そこから逆算して、既存のライブラリ等を調査した結果、以下の方式でできるようです。</p>
 <ul class="simple">
 <li>ポータルlink URL取得</li>
@@ -101,7 +106,7 @@ by <a class="url fn" href="/author/torofield.html">torofield</a>
 <li>3.ポータルをクリックして詳細を表示する</li>
 <li>4.「link」ボタンを押下し、リンクをコピーする</li>
 </ul>
-<p>リンクは以下のようになります。</p>
+<p>具体的な「ポータルlink URL」は以下のようになります。</p>
 <pre class="literal-block">
 https://www.ingress.com/intel?ll=35.476274,139.629552&amp;z=17&amp;pll=35.474809,139.625312
 </pre>
@@ -110,7 +115,7 @@ https://www.ingress.com/intel?ll=35.476274,139.629552&amp;z=17&amp;pll=35.474809
 <h3>rintelライブラリでポータル情報取得</h3>
 <p>実際にポータル情報を取得するライブラリはrintel(<a class="reference external" href="https://github.com/sugyan/rintel">https://github.com/sugyan/rintel</a>)を使用しました。</p>
 <p>以下の感じでサンプルプログラムを作成しました。portal_info.rbファイルとして、対象のディレクトリに保存してください。</p>
-<p>といっても、LOAD_PATHを付け加えただけで、特別な修正はしていません。</p>
+<p>といっても、LOAD_PATHを付け加えただけで、examplesにあるportal_info.rbからは、特別な修正はしていません。</p>
 <pre class="literal-block">
 #!/usr/bin/env ruby
 #
@@ -176,8 +181,11 @@ portal_info[14].each_with_index do |mod, i|
   end
 end
 </pre>
-<p>上記サンプルプログラムでは、動作しなかったため、Pull Requestを送ってパッチを取り込んでもらいました。(後述します)</p>
-<p>実際の手順は以下の通りです。以下ではrbenvを使用していますが、説明は割愛します。</p>
+</div>
+<div class="section" id="id6">
+<h3>ポータル情報取得手順</h3>
+<p>実際のポータル情報手順は以下の通りです。以下ではrbenvを使用していますが、説明は割愛します。</p>
+<p>portal_info.rbの引数に、「ポータルlink URL」を設定してください。以下の例では、最寄り駅のURLを使用していますが、「ポータルlink URL」であれば、なんでも構いません。</p>
 <pre class="literal-block">
 $ mkdir ingress-portal-view ; cd ingress-portal-view
 $ rbenv local 2.2.2
@@ -202,29 +210,30 @@ mods  :
 </pre>
 </div>
 </div>
-<div class="section" id="id4">
+<div class="section" id="id7">
 <h2>4.動作原理、および苦労した点</h2>
-<div class="section" id="id5">
+<div class="section" id="id8">
 <h3>動作原理について</h3>
 <p>portal_infoの動作は以下のようになっています。</p>
 <ul class="simple">
 <li>google(Ingress Intel Map)ログイン</li>
 <li>ポータルリンクURLから位置取得(tile_keyと緯度経度)</li>
 <li>tile_keyを引数にgetEntities呼び出し(Entity取得)</li>
-<li>Entityと緯度経度からguidを取得</li>
+<li>Entityと緯度経度からGUIDを取得</li>
 <li>GUIDからgetPortalDetailsを使用し、ポータル情報取得</li>
 </ul>
 <p>Ingressはgoogleの一部(最近独立しましたが)ですので、googleにログインが必須です。</p>
 <p>getEntitiesとは、表示している地図に存在するアイテム(ポータル,リンク等を含む、地図に表示する全部)を取得するAPIのようです。</p>
 <p>「tile_key」とは、Ingress Intel Mapが表示している地図上の範囲を、なんらかの計算にて取得するための情報のようです。</p>
-<p>そして、getEntitiesで取得した値と、緯度経度を比較して、同一の位置なEntityを取り出して、Entityから、実際のポータル情報の元となるGUIDを取得後getPortalDetailsを呼び出して具体的な値を取得するようです。</p>
+<p>そして、getEntitiesで取得した値と、緯度経度を比較して、同一の位置なEntityを取り出します。</p>
+<p>取り出したEntityから、実際のポータル情報の元となるGUIDを取得後、getPortalDetailsを呼び出して具体的な値を取得するようです。</p>
 </div>
-<div class="section" id="id6">
+<div class="section" id="id9">
 <h3>苦労した点</h3>
 <p>なかなかに苦労した点は以下でした。</p>
 <ul class="simple">
 <li>どこから手を付けていいか不明</li>
-<li>rintelに付属しているサンプルが動作しなかった</li>
+<li>rintelに付属しているサンプルが当初は動作しなかった</li>
 </ul>
 <blockquote>
 <ul class="simple">
@@ -232,15 +241,17 @@ mods  :
 <li>tile_keyの計算が失敗してる</li>
 </ul>
 </blockquote>
+</div>
+<div class="section" id="id10">
+<h3>どこから手を付けていいか不明</h3>
 <p>まずはどこから手を付けていいか途方に暮れていました。が、どうやら「getPortalDetails」という関数を使うらしいということが分かってからは、案外簡単に行きました。</p>
 </div>
-<div class="section" id="id7">
-<h3>rintelに付属しているサンプルが動作しなかった</h3>
+<div class="section" id="google">
+<h3>googleにログインできない</h3>
 <p>rintelというライブラリを調べて、サンプルプログラムを動作させるのが苦労しました。
-そもそもIngressはAPIを公開していないため、プログラムを作成した現在の動作に合わせざるを得ず、時間が経過すると動作しなくなるのはしょうがないところです。</p>
-<p>サンプルを起動したところ、いきなり起動に失敗しました。起動できない理由は、そもそも、googleにログインできていないようだと、あたりを付けて調査した結果、やっと理由が分かりました。</p>
-<p>googleにログインする際のHTML(一部)は以下なのですが、formのaction(AccountLoginInfo)と実際にログインするURL(ServiceLoginAuth)が違うためにログインできなかったようです。</p>
-<p>このようになってる理由は、CSRF対策だと思いますが、実際のHTMLを見るまでログインできない理由が理解できず、苦労しました</p>
+そもそもIngressはAPIを公開していないため、プログラムを作成した時点の動作に合わせざるを得ず、時間が経過すると動作しなくなるのはしょうがないところです。</p>
+<p>サンプル(portal_info.rb)を起動したところ、いきなり起動に失敗しました。起動できない理由は、そもそも、googleにログインできていないようだと、あたりを付けて調査した結果、やっと理由が分かりました。</p>
+<p>googleにログインする際のHTML(一部)は以下なのですが、formのaction(<strong>AccountLoginInfo</strong>)と実際にログインするURL(<strong>ServiceLoginAuth</strong>)が違うためにログインできなかったようです。</p>
 <pre class="literal-block">
 &lt;form novalidate method=&quot;post&quot; action=&quot;https://accounts.google.com/AccountLoginInfo&quot; id=&quot;gaia_loginform&quot;&gt;
 
@@ -250,13 +261,28 @@ mods  :
   , 'https://accounts.google.com/ServiceLoginAuth');
   &lt;/script&gt;
 </pre>
+<p>このようになってる理由は、CSRF対策だと思いますが、実際のHTMLを見るまでログインできない理由が理解できず、苦労しました。</p>
+</div>
+<div class="section" id="tile-key">
+<h3>tile_keyの計算が不正</h3>
 <p>もう一つは、tile_keyの計算が不正だったことです。</p>
-<p>こればかりは、計算方式が分からないとどうしようもありません。
-ググってみると、getEntitiesAPIを解析した人がいるようで、その人が使用している値を使用するとうまくいきました。</p>
-<p>なお修正内容は、すでにパッチとして取り込まれています。</p>
+<p>tile_keyの計算がIngress Intel Mapと異なること自体、理解するのに苦労しました。
+結局Ingress Intel MapでのHTTP通信結果から逆算して理解しました。</p>
+<p>こればかりは、計算方式が分からないとどうしようもありません。</p>
+<p>ググってみると、getEntitiesAPIを解析した人がいるようで、その人 <a class="footnote-reference" href="#id12" id="id11">[2]</a> が使用している値を使用するとうまくいきました。</p>
+<table class="docutils footnote" frame="void" id="id12" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id11">[2]</a></td><td><a class="reference external" href="http://blog.csdn.net/feng______/article/details/46697497">http://blog.csdn.net/feng______/article/details/46697497</a></td></tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="pull-requestmerge">
+<h3>修正はPull Request後にmerge済み</h3>
+<p>修正内容は、Pull Requestを出したら、ほぼすぐにmergeされ、パッチとして取り込まれています。</p>
 </div>
 </div>
-<div class="section" id="id8">
+<div class="section" id="id13">
 <h2>5.終わりに</h2>
 <p>手を付けた時は、もっとかかるかと思いましたが、意外と早くできました。</p>
 <p>次は、情報をDB等に格納し、統計表示するまでしていきたいと思います。</p>
