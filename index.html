@@ -58,8 +58,8 @@
 
     <div class='article'>
         <div class="content-title">
-            <a href="/icinga2 icinga web2 opentsdb grafana.html"><h1>icinga2 + icinga web2 + opentsdb + grafanaを使用したお手軽監視システム</h1></a>
-日 12 7月 2015
+            <a href="/Ingressのポータル情報をrubyで表示/統計してみる その1.html"><h1>Ingressのポータル情報をrubyで表示/統計してみる その1</h1></a>
+月 17 8月 2015
 
 by <a class="url fn" href="/author/torofield.html">torofield</a>
  
@@ -70,18 +70,258 @@ by <a class="url fn" href="/author/torofield.html">torofield</a>
         
         <div><div class="section" id="id1">
 <h2>1.はじめに</h2>
-<p>お仕事で監視ツールの調査をしていました。調べてみると、最近の監視システムは
-以下の感じのようです。</p>
+<p>2014年からIngressというゲームをしています。</p>
+<p>Ingressを続けている理由は、主に健康のため(のつもり)ですが、それだけでは、
+理由が不明確で、モチベーションにかけるのも確かです。</p>
+<p>なので、最近はIngress内のポータル[#]_維持を(勝手に)目標にしています。</p>
+<p>そうなると、ポータルを誰がどのぐらい維持できている(Ingress的にはownerである)のかが気になってきました。</p>
+<p>なので、ポータルの情報を取得し、統計を取ってみようと考えました。
+最近の仕事では、スクリプト言語を使用することが多いため、rubyで処理してみようと思います。</p>
+<!-- [#} ポータルとは、Ingress的に「記念碑や壁画、郵便局や学校といった公共施設、コンビニなど現実に存在するもの」で、ポータルをハックしたり、攻撃したりして、自分のポータルにできる。 -->
+</div>
+<div class="section" id="id2">
+<h2>2.ポータル情報の表示/統計を取るまでの方法</h2>
+<p>ポータル情報の表示/統計を取るまでの方法は(現状で)以下を考えています。</p>
 <ul class="simple">
-<li>旧来からある安定したツール(zabbix,nagios)</li>
-<li>Web UIが綺麗な先進的ツール(Munin,icinga2)</li>
-<li>次世代監視ツール Sensu Consul</li>
+<li>ポータル情報の取得</li>
+<li>ポータル情報の格納/表示</li>
+<li>ポータル情報の統計計算</li>
 </ul>
+</div>
+<div class="section" id="id3">
+<h2>3.ポータル情報の取得</h2>
+<p>ポータル情報を取ってみたいと思っても、最初は方法が思いつきませんでした。Ingressというゲームは、2015/08/17現在では、APIを公開していません。</p>
+<p>とりあえず、いろいろググったり、[Ingress Intel Map]_の通信内容を解析したりしてみたところ、どうやら、「getPortalDetails」というのがIngressのポータル情報を取得するAPIのようでした。</p>
+<!-- [Ingress Intel Map] https://www.ingress.com/intel -->
+<p>そこから逆算して、既存のライブラリ等を調査した結果、以下の方式でできるようです。</p>
+<ul class="simple">
+<li>ポータルlink URL取得</li>
+<li>rintelライブラリでポータル情報取得</li>
+</ul>
+<div class="section" id="link-url">
+<h3>ポータルlink URL取得</h3>
+<p>「ポータルlink URL」とは、Ingressのポータル情報を表示した際のURLです。具体的には以下の操作で取得できます。</p>
+<ul class="simple">
+<li>1.https://www.ingress.com/intelにアクセスする</li>
+<li>2.自分がポータル情報を取得したい場所に移動する</li>
+<li>3.ポータルをクリックして詳細を表示する</li>
+<li>4.「link」ボタンを押下し、リンクをコピーする</li>
+</ul>
+<p>リンクは以下のようになります。</p>
+<pre class="literal-block">
+https://www.ingress.com/intel?ll=35.476274,139.629552&amp;z=17&amp;pll=35.474809,139.625312
+</pre>
+</div>
+<div class="section" id="rintel">
+<h3>rintelライブラリでポータル情報取得</h3>
+<p>実際にポータル情報を取得するライブラリはrintel(<a class="reference external" href="https://github.com/sugyan/rintel">https://github.com/sugyan/rintel</a>)を使用しました。</p>
+<p>以下の感じでサンプルプログラムを作成しました。portal_info.rbファイルとして、対象のディレクトリに保存してください。</p>
+<p>といっても、LOAD_PATHを付け加えただけで、特別な修正はしていません。</p>
+<pre class="literal-block">
+#!/usr/bin/env ruby
+#
+# Usage:
+#   portal_info.rb PORTAL_LINK
+#
+# Example:
+#   portal_info.rb 'https://www.ingress.com/intel?ll=35.658581,139.745433&amp;z=19&amp;pll=35.658598,139.745458'
+#
+
+$LOAD_PATH.push('./rintel/lib')
+
+require 'rintel'
+require 'dotenv'
+require 'uri'
+require 'json'
+
+Dotenv.load
+client = Rintel::Client.new(
+  ENV['GOOGLE_USERNAME'],
+  ENV['GOOGLE_PASSWORD'],
+)
+
+portal_link = ARGV[0]
+
+qs = Hash[ URI::decode_www_form(URI::parse(portal_link).query) ]
+(lat, lng) = qs['pll'].split(',').map! {|d| d.to_f }
+target_tile_key = Rintel.tile_key(lat, lng, 18)
+
+entities = client.entities([target_tile_key])
+if ENV['DUMP']
+  puts JSON.pretty_generate(entities)
+end
+
+lati = lat.to_s.delete('.').to_i
+lngi = lng.to_s.delete('.').to_i
+guid = ''
+portal_info = []
+entities.each do |tile_key, data|
+  data['gameEntities'].each do |entity|
+    if entity[2][0] == 'p' &amp;&amp; entity[2][2] == lati &amp;&amp; entity[2][3] == lngi
+      guid = entity[0]
+      portal_info = client.portal_details(guid)
+      break
+    end
+  end
+end
+
+puts &lt;&lt;EOP
+name  : #{portal_info[8]}
+guid  : #{guid}
+belong: #{portal_info[1]}
+owner : #{portal_info[16]}
+resos : #{portal_info[15]}
+level : #{portal_info[4]}
+mods  :
+EOP
+portal_info[14].each_with_index do |mod, i|
+  if mod.nil?
+    puts &quot;  #{i}&quot;
+  else
+    puts &quot;  #{i} #{mod[1]} (#{mod[2]})&quot;
+  end
+end
+</pre>
+<p>上記サンプルプログラムでは、動作しなかったため、Pull Requestを送ってパッチを取り込んでもらいました。(後述します)</p>
+<p>実際の手順は以下の通りです。以下ではrbenvを使用していますが、説明は割愛します。</p>
+<pre class="literal-block">
+$ mkdir ingress-portal-view ; cd ingress-portal-view
+$ rbenv local 2.2.2
+$ gem install mechanize
+$ gem install dotenv
+$ git clone https://github.com/sugyan/rintel ./rintel
+$ export GOOGLE_USERNAME=(グーグルのユーザ名)
+$ export GOOGLE_PASSWORD=(グーグルのパスワード)
+$ ./portal_info.rb 'https://www.ingress.com/intel?ll=35.476274,139.629552&amp;z=17&amp;pll=35.474809,139.625312'
+
+name  : 東急電鉄反町駅
+guid  : e62435c5c0aa48a6ad9f0f99b3a86660.16
+belong: R
+owner : tomofumi0003
+resos : [[&quot;tyowwwomawww&quot;, 6, 3827], [&quot;tyowwwomawww&quot;, 7, 4461], [&quot;isseiujiie&quot;, 8, 5838], [&quot;M6JP&quot;, 7, 4830], [&quot;isseiujiie&quot;, 7, 4841], [&quot;StillRockin&quot;, 7, 4833], [&quot;tyowwwomawww&quot;, 8, 5808], [&quot;tyowwwomawww&quot;, 6, 3814]]
+level : 7
+mods  :
+  0 Portal Shield (COMMON)
+  1 Portal Shield (COMMON)
+  2
+  3 Portal Shield (RARE)
+</pre>
+</div>
+</div>
+<div class="section" id="id4">
+<h2>4.動作原理、および苦労した点</h2>
+<div class="section" id="id5">
+<h3>動作原理について</h3>
+<p>portal_infoの動作は以下のようになっています。</p>
+<ul class="simple">
+<li>google(Ingress Intel Map)ログイン</li>
+<li>ポータルリンクURLから位置取得(tile_keyと緯度経度)</li>
+<li>tile_keyを引数にgetEntities呼び出し(Entity取得)</li>
+<li>Entityと緯度経度からguidを取得</li>
+<li>GUIDからgetPortalDetailsを使用し、ポータル情報取得</li>
+</ul>
+<p>Ingressはgoogleの一部(最近独立しましたが)ですので、googleにログインが必須です。</p>
+<p>getEntitiesとは、表示している地図に存在するアイテム(ポータル,リンク等を含む、地図に表示する全部)を取得するAPIのようです。</p>
+<p>「tile_key」とは、Ingress Intel Mapが表示している地図上の範囲を、なんらかの計算にて取得するための情報のようです。</p>
+<p>そして、getEntitiesで取得した値と、緯度経度を比較して、同一の位置なEntityを取り出して、Entityから、実際のポータル情報の元となるGUIDを取得後getPortalDetailsを呼び出して具体的な値を取得するようです。</p>
+</div>
+<div class="section" id="id6">
+<h3>苦労した点</h3>
+<p>なかなかに苦労した点は以下でした。</p>
+<ul class="simple">
+<li>どこから手を付けていいか不明</li>
+<li>rintelに付属しているサンプルが動作しなかった</li>
+</ul>
+<blockquote>
+<ul class="simple">
+<li>googleにログインできない</li>
+<li>tile_keyの計算が失敗してる</li>
+</ul>
+</blockquote>
+<p>まずはどこから手を付けていいか途方に暮れていました。が、どうやら「getPortalDetails」という関数を使うらしいということが分かってからは、案外簡単に行きました。</p>
+</div>
+<div class="section" id="id7">
+<h3>rintelに付属しているサンプルが動作しなかった</h3>
+<p>rintelというライブラリを調べて、サンプルプログラムを動作させるのが苦労しました。
+そもそもIngressはAPIを公開していないため、プログラムを作成した現在の動作に合わせざるを得ず、時間が経過すると動作しなくなるのはしょうがないところです。</p>
+<p>サンプルを起動したところ、いきなり起動に失敗しました。起動できない理由は、そもそも、googleにログインできていないようだと、あたりを付けて調査した結果、やっと理由が分かりました。</p>
+<p>googleにログインする際のHTML(一部)は以下なのですが、formのaction(AccountLoginInfo)と実際にログインするURL(ServiceLoginAuth)が違うためにログインできなかったようです。</p>
+<p>このようになってる理由は、CSRF対策だと思いますが、実際のHTMLを見るまでログインできない理由が理解できず、苦労しました</p>
+<pre class="literal-block">
+&lt;form novalidate method=&quot;post&quot; action=&quot;https://accounts.google.com/AccountLoginInfo&quot; id=&quot;gaia_loginform&quot;&gt;
+
+ &lt;script&gt;
+  passwordSeparationPage = new gaia.pages.PasswordSeparationPage(
+  0
+  , 'https://accounts.google.com/ServiceLoginAuth');
+  &lt;/script&gt;
+</pre>
+<p>もう一つは、tile_keyの計算が不正だったことです。</p>
+<p>こればかりは、計算方式が分からないとどうしようもありません。
+ググってみると、getEntitiesAPIを解析した人がいるようで、その人が使用している値を使用するとうまくいきました。</p>
+<p>なお修正内容は、すでにパッチとして取り込まれています。</p>
+</div>
+</div>
+<div class="section" id="id8">
+<h2>5.終わりに</h2>
+<p>手を付けた時は、もっとかかるかと思いましたが、意外と早くできました。</p>
+<p>次は、情報をDB等に格納し、統計表示するまでしていきたいと思います。</p>
 </div>
 </div>
         <hr />
     </div>
 		
+
+ 
+        
+
+ 
+
+    <div class='article'>
+        <a href="/icinga2 icinga web2 opentsdb grafana.html"><h2>icinga2 + icinga web2 + opentsdb + grafanaを使用したお手軽監視システム(その1)</h2></a>
+        <div class= "well small"> 日 12 7月 2015
+
+by <a class="url fn" href="/author/torofield.html">torofield</a>
+ 
+
+
+ </div>
+        <div class="summary"><div class="section" id="id1">
+<h2>1.はじめに</h2>
+<p>お仕事で監視ツールの調査をしていました。調べてみると、最近の監視システムは
+以下の感じのようです。</p>
+<ul class="simple">
+<li>旧来からある安定したツール(zabbix,nagios)</li>
+<li>Web UIが綺麗な先進的ツール(Munin,icinga2)</li>
+<li>次世代監視ツール (Sensu,Consul)</li>
+</ul>
+<p>今回は、次世代監視ツールも興味があるものの、より実践的なicinga2の動作確認をしたいと思います。</p>
+<p>目標として、お手軽に監視+可視化できる環境を整えることとします。</p>
+</div>
+<div class="section" id="id2">
+<h2>2.監視+可視化システム概要</h2>
+<p>監視+可視化システムは以下のように設定したいと思います。
+VMはすでにインストールしてあるものとします。</p>
+<pre class="literal-block">
+VM(ubuntu 14.04)
+ icinga2
+ icinga web2
+ grafina
+ docker
+   docker1
+    opentsdb
+    icinga2
+   docker2
+    redis
+    icinga2
+</pre>
+<p>docker2は、今回のシステムには不要ですが、1台では寂しいので
+入れてみたいと思います。</p>
+</div>
+<div class="section" id="id3">
+<h2>2.監視+可視化システムのインストール ...</h2></div> <a class="btn btn-info xsmall" href="/icinga2 icinga web2 opentsdb grafana.html">read more</a></div>
+    </div>	
+				
 
  
         
@@ -225,6 +465,7 @@ $ export PERL5LIB=&quot;$HOME/perl5 ...</pre></div></div> <a class="btn btn-info
                 
                 <li><a href="/category/monitoring-dataanalysys.html">monitoring dataanalysys</a></li>
                 <li><a href="/category/pelican-python-perl-javascript.html">Pelican python perl javascript</a></li>
+                <li><a href="/category/ruby-ingress.html">ruby ingress</a></li>
                 <li><a href="/category/ruby-kibana-elasticsearch-dataanalysys.html">ruby kibana elasticsearch dataanalysys</a></li>
                    
             </ul>

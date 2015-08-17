@@ -58,7 +58,7 @@
 
     <div class='article'>
         <div class="content-title">
-            <a href="/icinga2 icinga web2 opentsdb grafana.html"><h1>icinga2 + icinga web2 + opentsdb + grafanaを使用したお手軽監視システム</h1></a>
+            <a href="/icinga2 icinga web2 opentsdb grafana.html"><h1>icinga2 + icinga web2 + opentsdb + grafanaを使用したお手軽監視システム(その1)</h1></a>
 日 12 7月 2015
 
 by <a class="url fn" href="/author/torofield.html">torofield</a>
@@ -75,8 +75,239 @@ by <a class="url fn" href="/author/torofield.html">torofield</a>
 <ul class="simple">
 <li>旧来からある安定したツール(zabbix,nagios)</li>
 <li>Web UIが綺麗な先進的ツール(Munin,icinga2)</li>
-<li>次世代監視ツール Sensu Consul</li>
+<li>次世代監視ツール (Sensu,Consul)</li>
 </ul>
+<p>今回は、次世代監視ツールも興味があるものの、より実践的なicinga2の動作確認をしたいと思います。</p>
+<p>目標として、お手軽に監視+可視化できる環境を整えることとします。</p>
+</div>
+<div class="section" id="id2">
+<h2>2.監視+可視化システム概要</h2>
+<p>監視+可視化システムは以下のように設定したいと思います。
+VMはすでにインストールしてあるものとします。</p>
+<pre class="literal-block">
+VM(ubuntu 14.04)
+ icinga2
+ icinga web2
+ grafina
+ docker
+   docker1
+    opentsdb
+    icinga2
+   docker2
+    redis
+    icinga2
+</pre>
+<p>docker2は、今回のシステムには不要ですが、1台では寂しいので
+入れてみたいと思います。</p>
+</div>
+<div class="section" id="id3">
+<h2>2.監視+可視化システムのインストール</h2>
+<p>インストールするツールは以下の通りです。</p>
+<ul class="simple">
+<li>監視ツール</li>
+<li>icinga2</li>
+<li>icinga web2</li>
+<li>可視化ツール</li>
+</ul>
+<blockquote>
+<ul class="simple">
+<li>docker</li>
+<li>opentsdb(docker版)</li>
+<li>grafana</li>
+</ul>
+</blockquote>
+<ul class="simple">
+<li>その他</li>
+</ul>
+<blockquote>
+<ul class="simple">
+<li>redis(docker版)</li>
+</ul>
+</blockquote>
+</div>
+<div class="section" id="id4">
+<h2>3.監視ツールのインストール</h2>
+<p>まずは、監視ツール群をインストールします。
+その1では、監視システムの中心部分をインストールしたいと思います。</p>
+<div class="section" id="icinga2">
+<h3>3.1 icinga2</h3>
+<p>インストール方法は[icinga2]_ に記述されています。</p>
+<table class="docutils citation" frame="void" id="id5" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[icinga2]</td><td><a class="reference external" href="http://docs.icinga.org/icinga2/latest/doc/module/icinga2/toc#!/icinga2/latest/doc/module/icinga2/chapter/getting">http://docs.icinga.org/icinga2/latest/doc/module/icinga2/toc#!/icinga2/latest/doc/module/icinga2/chapter/getting</a>-started#setting-up-icinga2</td></tr>
+</tbody>
+</table>
+<pre class="literal-block">
+# add-apt-repository ppa:formorer/icinga
+# apt-get update
+# apt-get install icinga2
+</pre>
+<p>nagiosのプラグインもインストールしておきます。</p>
+<pre class="literal-block">
+# apt-get install nagios-plugins
+</pre>
+<p>一応起動しておきます。</p>
+<pre class="literal-block">
+# service icinga2 start
+</pre>
+</div>
+<div class="section" id="icinga-web2">
+<h3>3.2 icinga web2</h3>
+<p>icinga web2をインストールします。</p>
+<p>まずはMySQLをインストールします。
+icinga web2の設定等を格納する用途のようです。</p>
+<pre class="literal-block">
+# apt-get install mysql-server mysql-client
+</pre>
+<p>次にIDO modules(MySQL用)をインストールします。
+icinga2がMySQLを使用するためのドライバのようです。</p>
+<pre class="literal-block">
+# apt-get install icinga2-ido-mysql
+</pre>
+<p>インストールする際に、MySQLの管理者用のパスワードが必要になります。
+また、IDO module用のパスワードの設定も行います。icinga web2のsetupをブラウザ上で行う際に必要になります。</p>
+<pre class="literal-block">
+# mysql -u root -p
+
+mysql&gt;  CREATE DATABASE icinga;
+        GRANT SELECT, INSERT, UPDATE, DELETE, DROP, CREATE VIEW, INDEX, EXECUTE ON icinga.* TO 'icinga'&#64;'localhost' IDENTIFIED BY 'icinga';
+
+# mysql -u root -p icinga &lt; /usr/share/icinga2-ido-mysql/schema/mysql.sql
+
+root&#64;ubuntu:~# icinga2 feature enable ido-mysql
+Enabling feature ido-mysql. Make sure to restart Icinga 2 for these changes to take effect.
+
+# icinga2 feature enable command
+
+# service icinga2 restart
+</pre>
+<p>後は、以下ドキュメントに従ってインストールします。
+<a class="reference external" href="https://github.com/Icinga/icingaweb2/blob/master/doc/installation.md">https://github.com/Icinga/icingaweb2/blob/master/doc/installation.md</a></p>
+<pre class="literal-block">
+# wget -O - http://packages.icinga.org/icinga.key | apt-key add -
+# add-apt-repository 'deb http://packages.icinga.org/ubuntu icinga-trusty main'
+# apt-get update
+
+# apt-get install icingaweb2
+
+(web上からicinga2のコマンドを投入できるよう、以下をしておきます。)
+# usermod -a -G icingaweb2 www-data
+</pre>
+<p>以下のURLをブラウザからアクセスします。
+192.168.62.133は例で使用したVMのIPアドレスなので、適宜読み替えてください。</p>
+<pre class="literal-block">
+http://192.168.62.133/icingaweb2/setup
+</pre>
+<p>以下のコマンドを打ち、標準出力に出た文字列をブラウザのSetup Tokenに設定してください。</p>
+<pre class="literal-block">
+# head -c 12 /dev/urandom | base64 | tee /etc/icingaweb2/setup.token; chmod 0660 /etc/icingaweb2/setup.token;
+f+033jAxVJzHliWQ
+</pre>
+<p>/etc/php5/apache2/php.iniのdate.timezoneを日本に変えます。</p>
+<pre class="literal-block">
+[Date]
+; Defines the default timezone used by the date functions
+; http://php.net/date.timezone
+date.timezone = &quot;Asia/Tokyo&quot;
+</pre>
+<p>設定を変更したらhttpdを再起動します。</p>
+<pre class="literal-block">
+# service apache2 restart
+</pre>
+<p>後は、基本nextを連打していきます。</p>
+<p>現状(2.0.0 rc1)での設定方法を記述します。</p>
+<ul class="simple">
+<li>Authentication Type(認証情報をどこに格納するか)</li>
+</ul>
+<blockquote>
+<ul class="simple">
+<li>databaseを選択</li>
+</ul>
+</blockquote>
+<ul class="simple">
+<li>Database Resource(icinga web2の設定をMySQLに格納する設定)</li>
+</ul>
+<blockquote>
+<ul class="simple">
+<li>上記のMySQLコマンドで設定したのを指定します。</li>
+</ul>
+</blockquote>
+<pre class="literal-block">
+Database Name: icinga
+Username: icinga
+Password: icinga
+</pre>
+<ul class="simple">
+<li>Administration</li>
+</ul>
+<blockquote>
+<ul class="simple">
+<li>icinga web2の管理ユーザを生成します。ここでは、admin(admin)にしておきます。</li>
+</ul>
+</blockquote>
+<pre class="literal-block">
+Username: admin
+Password: admin
+Repeat password: admin
+</pre>
+<ul class="simple">
+<li>Application Configuration</li>
+</ul>
+<blockquote>
+<ul class="simple">
+<li>デフォルトのまま</li>
+</ul>
+</blockquote>
+<ul class="simple">
+<li>Database Setup</li>
+</ul>
+<p>DB管理者権限(root等)のあるアカウントを指定します。
+一応スキップできますが、指定しないと、icinga web2に入れなくなるので注意してください。</p>
+<ul class="simple">
+<li>You've configured Icinga Web 2 successfully.</li>
+<li>Monitoring Backend</li>
+</ul>
+<blockquote>
+<ul class="simple">
+<li>デフォルトのまま</li>
+</ul>
+</blockquote>
+<ul class="simple">
+<li>Monitoring IDO Resource</li>
+</ul>
+<blockquote>
+<ul class="simple">
+<li>上記でIDOの設定を自動的に行った場合、設定が以下に書いてあります。</li>
+</ul>
+</blockquote>
+<pre class="literal-block">
+/etc/icinga2/features-enabled/ido-mysql.conf
+</pre>
+<p>書いてある設定値をwebにも設定します。</p>
+<ul class="simple">
+<li>Monitoring Instance</li>
+</ul>
+<blockquote>
+<ul class="simple">
+<li>デフォルト</li>
+</ul>
+</blockquote>
+<ul class="simple">
+<li>Monitoring Security</li>
+</ul>
+<blockquote>
+<ul class="simple">
+<li>デフォルト</li>
+</ul>
+</blockquote>
+<p>なお、私の環境では、「Base table or view not found: 1146 Table 'icinga.icingaweb_group' doesn't exist」と言われ、セットアップが完了できなかったため
+以下のコマンドを打ってicingaweb_groupテーブルを作成して続行させました。</p>
+<pre class="literal-block">
+# mysql -u root -p icinga &lt; /usr/share/icingaweb2/etc/schema/mysql.schema.sql
+</pre>
+<p>その2以降では、可視化ツールその他をインストールしたいと思います。</p>
+</div>
 </div>
 </div>
         <hr />
@@ -122,6 +353,7 @@ by <a class="url fn" href="/author/torofield.html">torofield</a>
                 
                 <li><a href="/category/monitoring-dataanalysys.html">monitoring dataanalysys</a></li>
                 <li><a href="/category/pelican-python-perl-javascript.html">Pelican python perl javascript</a></li>
+                <li><a href="/category/ruby-ingress.html">ruby ingress</a></li>
                 <li><a href="/category/ruby-kibana-elasticsearch-dataanalysys.html">ruby kibana elasticsearch dataanalysys</a></li>
                    
             </ul>
