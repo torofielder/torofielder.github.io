@@ -80,22 +80,22 @@ by <a class="url fn" href="/author/torofield.html">torofield</a>
 <li>python</li>
 <li>javascript</li>
 <li>HTML</li>
-<li>ruby</li>
+<li>ruby (今回は割愛)</li>
 </ul>
 </blockquote>
-<ul>
-<li><p class="first">コマンドで起動する</p>
-<p>IDEを使う方式もありますが、今回はコマンドで起動する方式のみにする。</p>
-</li>
-<li><p class="first">外部ネットワークに接続する方式を避ける</p>
-</li>
+<ul class="simple">
+<li>コマンドで起動する</li>
+</ul>
+<p>IDEを使う方式もありますが、今回はコマンドで起動する方式のみにします。</p>
+<ul class="simple">
+<li>外部ネットワークに接続する方式を避ける</li>
 </ul>
 <p>以降で各スクリプトのlint/整形ツールのインストール方法を書いていきます。</p>
 </div>
 <div class="section" id="perl">
 <h2>2.perl</h2>
 <div class="section" id="id3">
-<h3>インストール環境構築</h3>
+<h3>環境構築</h3>
 <p>まず、外部ネットワークに接続できない場合でも、インストールできる環境を設定します。</p>
 <p>手始めに、cpanmコマンドをインストールします。export部分は.bashrcに入れてもよいです。</p>
 <pre class="literal-block">
@@ -207,7 +207,7 @@ $ perltidy -b s3.pl
 <h2>3.python</h2>
 <p>pythonのバージョンは2.7を仮定しています。</p>
 <div class="section" id="id4">
-<h3>インストール環境構築</h3>
+<h3>環境構築</h3>
 <p>まずは、インストール環境を構築します。PYTHONPATH/PATHは.bashrcに記述しても動作します。</p>
 <pre class="literal-block">
     $ export PYTHONPATH=$HOME/.local/lib/python2.7/site-packages
@@ -317,18 +317,25 @@ run(host='0.0.0.0', port=8080, debug=True, reloader=True)
 </div>
 <div class="section" id="javascript">
 <h2>4.javascript</h2>
-<p>JSHint</p>
-<p>nodejs</p>
+<div class="section" id="id5">
+<h3>環境構築</h3>
+<p>以下をインストールします。</p>
+<ul class="simple">
+<li>JSHint</li>
+<li>nodejs</li>
+</ul>
 <p><a class="reference external" href="http://nodejs.org/dist/v0.12.0/node-v0.12.0-linux-x64.tar.gz">http://nodejs.org/dist/v0.12.0/node-v0.12.0-linux-x64.tar.gz</a></p>
 <p>curl <a class="reference external" href="https://npmjs.org/install.sh">https://npmjs.org/install.sh</a></p>
 <p><a class="reference external" href="https://github.com/jshint/jshint/raw/master/dist/jshint.js">https://github.com/jshint/jshint/raw/master/dist/jshint.js</a></p>
-<p>$ wget <a class="reference external" href="http://nodejs.org/dist/node-v0.2.3.tar.gz">http://nodejs.org/dist/node-v0.2.3.tar.gz</a>
+<pre class="literal-block">
+$ wget http://nodejs.org/dist/node-v0.2.3.tar.gz
 $ tar -xvzf node-v0.2.3.tar.gz
 $ cd node-v0.2.3
 $ ./configure
 $ make
 $ sudo make install
-必要なパッケージはもちろん環境によって違う。上記はUbuntu10.04の初期状態の場合。make testをする場合には、さらにapache2-utilsをinstallしておく必要がある。
+</pre>
+<p>必要なパッケージはもちろん環境によって違う。上記はUbuntu10.04の初期状態の場合。make testをする場合には、さらにapache2-utilsをinstallしておく必要がある。
 npmは作者が推奨しているやり方が3通り、推奨していないやり方(sudoで実行しちゃう方法)が1通りある。
 1. /usr/local以下をrootではなく自分のものにしてしまう方法。自分しか触らないマシンならいいんじゃねって話。</p>
 <p>$ sudo chown -R $USER /usr/local
@@ -343,6 +350,7 @@ $ curl <a class="reference external" href="http://npmjs.org/install.sh">http://n
 node本体は上述の方法でインストールしておく。</p>
 <p>まず設定
 $ cat &gt;&gt;~/.npmrc &lt;</p>
+</div>
 </div>
 </div>
 	

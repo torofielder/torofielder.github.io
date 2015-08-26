@@ -59,7 +59,7 @@
     <div class='article'>
         <div class="content-title">
             <a href="/Ingressのポータル情報をrubyで表示/統計してみる その1.html"><h1>Ingressのポータル情報をrubyで表示/統計してみる その1</h1></a>
-月 17 8月 2015
+木 27 8月 2015
 
 by <a class="url fn" href="/author/torofield.html">torofield</a>
  
@@ -96,16 +96,28 @@ by <a class="url fn" href="/author/torofield.html">torofield</a>
 </div>
 <div class="section" id="id5">
 <h2>3.ポータル情報の取得</h2>
-<p>ポータル情報を取ってみたいと思っても、最初は方法が思いつきませんでした。Ingressというゲームは、2015/08/17現在では、APIを公開していません。</p>
-<p>とりあえず、いろいろググったり、 <a class="reference external" href="https://www.ingress.com/intel">Ingress Intel Map</a> の通信内容を解析したりしてみたところ、どうやら、「getPortalDetails」というのがIngressのポータル情報を取得するAPIのようでした。</p>
-<p>そこから逆算して、既存のライブラリ等を調査した結果、以下の方式でできるようです。</p>
+<p>ポータル情報を取ってみたいと思いましたが、Ingressというゲームは、2015/08/23現在では、APIを公開していません。</p>
+<p>とりあえず、いろいろググったり、 <a class="reference external" href="https://www.ingress.com/intel">Ingress Intel Map</a> の通信内容を解析 <a class="footnote-reference" href="#id8" id="id6">[2]</a> したりしてみたところ、どうやら、「getPortalDetails」というのがIngressのポータル情報を取得するAPIのようでした。</p>
+<p>そこから逆算して、既存のライブラリ等を調査した結果、以下の方式でできるようです。 <a class="footnote-reference" href="#id9" id="id7">[3]</a></p>
 <ul class="simple">
 <li>ポータルlink URL取得</li>
 <li>rintelライブラリでポータル情報取得</li>
 </ul>
+<table class="docutils footnote" frame="void" id="id8" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id6">[2]</a></td><td>解析と言っても、ブラウザから使用できるツール(Firebug)等でURLを表示しただけで、システム開発で行う、一般的な解析のみ行っています。規約( <a class="reference external" href="https://www.ingress.com/terms">https://www.ingress.com/terms</a> や <a class="reference external" href="http://www.google.com/policies/privacy/">http://www.google.com/policies/privacy/</a> )からすると、通信内容の秘匿等を定めた特別な規約はなかったため、調査した結果を書いています。</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="id9" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id7">[3]</a></td><td>規約( <a class="reference external" href="https://www.ingress.com/terms">https://www.ingress.com/terms</a> )にもありますが、将来にわたって保証されるわけではありません。本記事では現時点で可能な方法を書いています。ご注意ください。</td></tr>
+</tbody>
+</table>
 <div class="section" id="link-url">
 <h3>ポータルlink URL取得</h3>
-<p>「ポータルlink URL」とは、Ingressのポータル情報を表示した際のURLです。具体的には以下の操作で取得できます。</p>
+<p>「ポータルlink URL」とは、Ingressのポータル情報を表示する際のURLです。具体的には以下の操作で取得できます。</p>
 <ul class="simple">
 <li>1.https://www.ingress.com/intelにアクセスする</li>
 <li>2.自分がポータル情報を取得したい場所に移動する</li>
@@ -121,7 +133,7 @@ https://www.ingress.com/intel?ll=35.476274,139.629552&amp;z=17&amp;pll=35.474809
 <h3>rintelライブラリでポータル情報取得</h3>
 <p>実際にポータル情報を取得するライブラリはrintel(<a class="reference external" href="https://github.com/sugyan/rintel">https://github.com/sugyan/rintel</a>)を使用しました。</p>
 <p>以下の感じでサンプルプログラムを作成しました。portal_info.rbファイルとして、対象のディレクトリに保存してください。</p>
-<p>といっても、LOAD_PATHを付け加えただけで、examplesにあるportal_info.rbからは、特別な修正はしていません。</p>
+<p>といっても、examplesにあるportal_info.rbとの違いは、LOAD_PATHを付け加えたぐらいです。</p>
 <pre class="literal-block">
 #!/usr/bin/env ruby
 #
@@ -188,7 +200,7 @@ portal_info[14].each_with_index do |mod, i|
 end
 </pre>
 </div>
-<div class="section" id="id6">
+<div class="section" id="id10">
 <h3>ポータル情報取得手順</h3>
 <p>実際のポータル情報手順は以下の通りです。以下ではrbenvを使用していますが、説明は割愛します。</p>
 <p>portal_info.rbの引数に、「ポータルlink URL」を設定してください。以下の例では、最寄り駅のURLを使用していますが、「ポータルlink URL」であれば、なんでも構いません。</p>
@@ -216,9 +228,9 @@ mods  :
 </pre>
 </div>
 </div>
-<div class="section" id="id7">
+<div class="section" id="id11">
 <h2>4.動作原理、および苦労した点</h2>
-<div class="section" id="id8">
+<div class="section" id="id12">
 <h3>動作原理について</h3>
 <p>portal_infoの動作は以下のようになっています。</p>
 <ul class="simple">
@@ -229,12 +241,12 @@ mods  :
 <li>GUIDからgetPortalDetailsを使用し、ポータル情報取得</li>
 </ul>
 <p>Ingressはgoogleの一部(最近独立しましたが)ですので、googleにログインが必須です。</p>
-<p>getEntitiesとは、表示している地図に存在するアイテム(ポータル,リンク等を含む、地図に表示する全部)を取得するAPIのようです。</p>
-<p>「tile_key」とは、Ingress Intel Mapが表示している地図上の範囲を、なんらかの計算にて取得するための情報のようです。</p>
+<p>getEntitiesとは、Ingress Intel Mapが表示している地図に存在するアイテム(ポータル,リンク等を含む、地図に表示する全部)を取得するAPIのようです。</p>
+<p>「tile_key」とは、表示している地図上の範囲を、なんらかの計算にて取得するための情報のようです。</p>
 <p>そして、getEntitiesで取得した値と、緯度経度を比較して、同一の位置なEntityを取り出します。</p>
 <p>取り出したEntityから、実際のポータル情報の元となるGUIDを取得後、getPortalDetailsを呼び出して具体的な値を取得するようです。</p>
 </div>
-<div class="section" id="id9">
+<div class="section" id="id13">
 <h3>苦労した点</h3>
 <p>なかなかに苦労した点は以下でした。</p>
 <ul class="simple">
@@ -248,9 +260,10 @@ mods  :
 </ul>
 </blockquote>
 </div>
-<div class="section" id="id10">
+<div class="section" id="id14">
 <h3>どこから手を付けていいか不明</h3>
-<p>まずはどこから手を付けていいか途方に暮れていました。が、どうやら「getPortalDetails」という関数を使うらしいということが分かってからは、案外簡単に行きました。</p>
+<p>まずは、どこから手を付けていいかを考えていました。</p>
+<p>どうやら「getPortalDetails」という関数を使うらしいということが分かってからは、案外簡単に行きました。</p>
 </div>
 <div class="section" id="google">
 <h3>googleにログインできない</h3>
@@ -275,11 +288,11 @@ mods  :
 <p>tile_keyの計算がIngress Intel Mapと異なること自体、理解するのに苦労しました。
 結局Ingress Intel MapでのHTTP通信結果から逆算して理解しました。</p>
 <p>こればかりは、計算方式が分からないとどうしようもありません。</p>
-<p>ググってみると、getEntitiesAPIを解析した人がいるようで、その人 <a class="footnote-reference" href="#id12" id="id11">[2]</a> が使用している値を使用するとうまくいきました。</p>
-<table class="docutils footnote" frame="void" id="id12" rules="none">
+<p>ググってみると、getEntitiesAPIを解析した人がいるようで、その人 <a class="footnote-reference" href="#id16" id="id15">[4]</a> が使用している値を使用するとうまくいきました。</p>
+<table class="docutils footnote" frame="void" id="id16" rules="none">
 <colgroup><col class="label" /><col /></colgroup>
 <tbody valign="top">
-<tr><td class="label"><a class="fn-backref" href="#id11">[2]</a></td><td><a class="reference external" href="http://blog.csdn.net/feng______/article/details/46697497">http://blog.csdn.net/feng______/article/details/46697497</a></td></tr>
+<tr><td class="label"><a class="fn-backref" href="#id15">[4]</a></td><td><a class="reference external" href="http://blog.csdn.net/feng______/article/details/46697497">http://blog.csdn.net/feng______/article/details/46697497</a></td></tr>
 </tbody>
 </table>
 </div>
@@ -288,7 +301,7 @@ mods  :
 <p>修正内容は、Pull Requestを出したら、ほぼすぐにmergeされ、パッチとして取り込まれています。</p>
 </div>
 </div>
-<div class="section" id="id13">
+<div class="section" id="id17">
 <h2>5.終わりに</h2>
 <p>手を付けた時は、もっとかかるかと思いましたが、意外と早くできました。</p>
 <p>次は、情報をDB等に格納し、統計表示するまでしていきたいと思います。</p>
@@ -428,27 +441,27 @@ by <a class="url fn" href="/author/torofield.html">torofield</a>
 <li>python</li>
 <li>javascript</li>
 <li>HTML</li>
-<li>ruby</li>
+<li>ruby (今回は割愛)</li>
 </ul>
 </blockquote>
-<ul>
-<li><p class="first">コマンドで起動する</p>
-<p>IDEを使う方式もありますが、今回はコマンドで起動する方式のみにする。</p>
-</li>
-<li><p class="first">外部ネットワークに接続する方式を避ける</p>
-</li>
+<ul class="simple">
+<li>コマンドで起動する</li>
+</ul>
+<p>IDEを使う方式もありますが、今回はコマンドで起動する方式のみにします。</p>
+<ul class="simple">
+<li>外部ネットワークに接続する方式を避ける</li>
 </ul>
 <p>以降で各スクリプトのlint/整形ツールのインストール方法を書いていきます。</p>
 </div>
 <div class="section" id="perl">
 <h2>2.perl</h2>
 <div class="section" id="id3">
-<h3>インストール環境構築</h3>
+<h3>環境構築</h3>
 <p>まず、外部ネットワークに接続できない場合でも、インストールできる環境を設定します。</p>
 <p>手始めに、cpanmコマンドをインストールします。export部分は.bashrcに入れてもよいです。</p>
 <pre class="literal-block">
 $ export PERL_LOCAL_LIB_ROOT=&quot;$HOME/perl5&quot;;
-$ export PERL5LIB=&quot;$HOME/perl5 ...</pre></div></div> <a class="btn btn-info xsmall" href="/スクリプトごと 文法チェック/整形 ツール　インストールまとめ.html">read more</a></div>
+$ export PERL5LIB=&quot;$HOME ...</pre></div></div> <a class="btn btn-info xsmall" href="/スクリプトごと 文法チェック/整形 ツール　インストールまとめ.html">read more</a></div>
     </div>	
 				
 <div class="pagination">
