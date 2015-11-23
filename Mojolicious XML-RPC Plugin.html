@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="utf-8">
+    <title>torofielder blog</title>
+    <meta name="description" content="">
+    <meta name="author" content="torofield">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
+    <!--[if lt IE 9]>
+    <script src="/theme/html5.js"></script>
+    <![endif]-->
+
+    <!-- Le styles -->
+    <link href="/theme/bootstrap.min.css" rel="stylesheet">
+    <link href="/theme/bootstrap.min.responsive.css" rel="stylesheet">
+    <link href="/theme/local.css" rel="stylesheet">
+    <link href="/theme/pygments.css" rel="stylesheet">
+
+    <!-- So Firefox can bookmark->"abo this site" -->
+
+</head>
+
+<body>
+
+<div class="navbar">
+    <div class="navbar-inner">
+    <div class="container">
+
+         <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+             <span class="icon-bar"></span>
+             <span class="icon-bar"></span>
+             <span class="icon-bar"></span>
+         </a>
+
+        <a class="brand" href="">torofielder blog</a>
+
+        <div class="nav-collapse">
+        <ul class="nav">
+            
+        </ul>
+        </div>
+        
+    </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="content">
+    <div class="row">
+
+        <div class="span9">
+    <div class='article'>
+        <div class="content-title">
+            <h1>Mojolicious XML-RPC Pluginの開発(1)</h1>
+月 23 11月 2015
+
+by <a class="url fn" href="/author/torofield.html">torofield</a>
+ 
+
+
+        </div>
+	
+        <div><div class="section" id="id1">
+<h2>はじめに</h2>
+<p>最近、お仕事関連で、perlとWebアプリケーションを触っています。</p>
+<p>両方一度にお勉強、ということで、perlのWAF(Webアプリケーションフレームワーク)を調べてみようと思いました。
+ここでは、perlのMojolicious上で動作する、XML-RPC Pluginを作ってみようと思います。</p>
+<p>説明は以下の順(1.-&gt;2.-&gt;3.)で行っていきます。記述内容が多くなってしまったので、(1)と(2)に分けます。</p>
+<ol class="arabic simple">
+<li>Mojoliciousとは -&gt;(1)</li>
+<li>Mojolicious上でXML-RPC関数を直接実装(Pluginなし) -&gt;(1)</li>
+<li>Mojolicious XML-RPC Plugin経由でXML-RPC実装 -&gt;(2)</li>
+</ol>
+<p>サンプルの実装は、[<a class="reference external" href="./xmlrpctest.tar.gz">mojoxmlrpc</a>]に置いてあります。</p>
+</div>
+<div class="section" id="mojolicious">
+<h2>1. Mojoliciousとは</h2>
+<p>&quot;Mojolicious&quot;とはperlのWAFです。なんとなくモダンそうなので調べてみました。</p>
+<p>Mojolicious(<a class="reference external" href="http://mojolicio.us/">http://mojolicio.us/</a>)については、[<a class="reference external" href="https://github.com/yuki-kimoto/mojolicious-guides-japanese/wiki">Mojoliciousの日本語版wiki</a>]によくまとまってます。インストール方法から概要まで、一通り記述があります。</p>
+</div>
+<div class="section" id="xml-rpc">
+<h2>1.1 XML-RPCとは</h2>
+<p>[<a class="reference external" href="http://ja.wikipedia.org/wiki/XML-RPC">XML-RPC</a>]とは、呼び出しをXMLで符号化し、HTTP を通信プロトコルに使用する RPC プロトコルです。(リンク先より引用)</p>
+<p>SOAPと呼ばれていた規格の前身といえる規格です。特徴としては扱いやすいことだと思います。</p>
+<p>XML-RPCはSOAP(のWSDL)のように、呼び出し方法を規定する正式なやりかたはありません。呼び出し方法は別プロトコル(主に人間が判断する文書)にて定義します。</p>
+<p>perlのXML-RPCの実装は、[<a class="reference external" href="http://www.ibm.com/developerworks/jp/webservices/library/ws-xpc1">Frontier-RPC2</a>]を使用しました。(リンク先の内容はよくまとまっていておすすめです)</p>
+</div>
+<div class="section" id="mojoliciousxml-rpc">
+<h2>2. Mojolicious上でXML-RPC関数を直接実装</h2>
+<p>ここでは、Mojoliciousが直接「XML-RPCサーバ」となり、XML-RPCクライアントを待ち受けるサーバを作ってみようと思います。</p>
+<p>作成手順としては以下になります。MojoliciousやFrontier::RPC2が、既にインストールしてある場合は3.以降の手順を行ってください。</p>
+<p>なお、XML-RPCクライアントは、簡単に作るため、pythonにしています。</p>
+<ol class="arabic simple">
+<li>Mojoliciousインストール</li>
+</ol>
+<pre class="literal-block">
+curl get.mojolicio.us | sh
+</pre>
+<ol class="arabic simple" start="2">
+<li>Frontier::RPCのインストール</li>
+</ol>
+<blockquote>
+CPANよりインストールします。</blockquote>
+<pre class="literal-block">
+$ perl -MCPAN -eshell
+cpan&gt; install Frontier::RPC2
+</pre>
+<ol class="arabic simple" start="3">
+<li>「XML-RPCサーバ」作成</li>
+</ol>
+<blockquote>
+詳細は、以降(2.1 XML-RPCサーバ作成詳細)に記述します。</blockquote>
+<ol class="arabic simple" start="4">
+<li>「XML-RPCサーバ」起動</li>
+</ol>
+<pre class="literal-block">
+$ script/xmlrpctest daemon --listen http://192.168.42.130:8000
+</pre>
+<ol class="arabic" start="5">
+<li><p class="first">XML-RPCクライアントから通信</p>
+<p>別マシン(ここではWindows上)でpythonからXML-RPC呼び出しを行います。
+詳細は、以降(3. XML-RPCクライアント側)に記述します。</p>
+</li>
+</ol>
+<pre class="literal-block">
+&gt;python xmlrpc_client.py
+ 1 + 2 : 3
+ 3 - 2 : 1
+ {'a': 'b', 'c': [1, 3, 2], 'b': 1500000000}
+</pre>
+<div class="section" id="id3">
+<h3>2.1 XML-RPCサーバ作成詳細</h3>
+<p>以下に「XML-RPCサーバ」の概要、および作成手順を説明します。</p>
+</div>
+<div class="section" id="id4">
+<h3>2.1.1 概要(各コンポーネント)</h3>
+<p>まず、「XML-RPCサーバ」内部には、以下のコンポーネント(部品)があります。</p>
+<ul>
+<li><dl class="first docutils">
+<dt>Mojolicious(雛形)</dt>
+<dd><p class="first last">Mojoliciousによって自動生成される、アプリケーションの雛形。
+雛形を修正していくことでWebアプリケーションを実装できる。</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>アプリケーションクラス</dt>
+<dd><p class="first last">Webアプリケーション全体を制御するクラス</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>コントローラクラス</dt>
+<dd><p class="first last">WebアプリケーションのMVC中、コントローラを実装するクラス</p>
+</dd>
+</dl>
+</li>
+</ul>
+<p>XML-RPCクライアントも含めた、各コンポーネントの関連は、以下のようになっています。</p>
+<pre class="literal-block">
+XML-RPCクライアント(python)
+ -&gt; 「XML-RPCサーバ」
+  -&gt; Mojolicious(雛形)
+    -&gt; アプリケーションクラス
+      -&gt; コントローラクラス
+</pre>
+<p>次に、各コンポーネントをどのように作成するのか、作成手順を示します。</p>
+</div>
+<div class="section" id="id5">
+<h3>2.1.2 各コンポーネント作成手順</h3>
+<p>「XML-RPCサーバ」の各コンポーネントを、以下のように実装しました。</p>
+<div class="section" id="id6">
+<h4>(1) Mojoliciousによる雛形作成</h4>
+<p>Mojoliciousでの雛形は以下のように作成します。</p>
+<pre class="literal-block">
+$ mojo generate app Xmlrpctest
+</pre>
+<p>上記のコマンドにて、「Xmlrpctestアプリケーション」という形でアプリケーションを作成します。起動すると、以下のようなファイルが生成されます。</p>
+<pre class="literal-block">
+xmlrpctest/
+ lib/
+  Xmlrpctest/
+   Example.pm
+  Xmlrpctest.pm
+    log/
+     development.log
+     public/
+  index.html
+     script/
+       xmlrpctest
+ t/
+   basic.t
+     templates/
+     example/
+   welcome.html.ep
+     layouts/
+       default.html.ep
+</pre>
+<p>次に、アプリケーションクラスとコントローラクラスを追加します。主に修正/追加するファイルは以下です。</p>
+<pre class="literal-block">
+lib/Xmlrpctest.pm
+lib/Xmlrpctest/Method.pm
+</pre>
+</div>
+<div class="section" id="lib-xmlrpctest-pm">
+<h4>(2) アプリケーションクラス(lib/Xmlrpctest.pm)修正</h4>
+<p>アプリケーションクラスとは、アプリケーションを起動した際に、最初に呼ばれるクラスです。
+主に、「ルート設定」(後述)を行います。</p>
+<p>「XML-RPCサーバ」アプリケーションクラスは、XML-RPCのURL(/RPC2)にアクセスされた場合に、
+どのコントローラに遷移するか設定しています。</p>
+<p>以下がアプリケーションクラスの中心です。
+アプリケーションが起動されると、startup関数が呼び出される仕様になっています。</p>
+<pre class="literal-block">
+package Xmlrpctest;
+use Mojo::Base 'Mojolicious';
+
+# This method will run once at server start
+sub startup {
+  my $self = shift;
+
+  # Documentation browser under &quot;/perldoc&quot;
+  $self-&gt;plugin('PODRenderer');
+
+  # Router
+  my $r = $self-&gt;routes;
+
+  # Normal route to controller
+  $r-&gt;get('/')-&gt;to('example#welcome');
+
+  #
+  $r-&gt;post('/RPC2')-&gt;to('method#process');
+}
+
+1;
+</pre>
+<p>特に重要なのが以下です。/RPC2というURLにアクセス(POSTメソッド)が来たら、
+Methodというコントローラクラスのprocessという関数に遷移するという設定です。</p>
+<pre class="literal-block">
+$r-&gt;post('/RPC2')-&gt;to('method#process');
+</pre>
+</div>
+<div class="section" id="lib-xmlrpctest-method-pm">
+<h4>(3) コントローラクラス(lib/Xmlrpctest/Method.pm)追加(作成)</h4>
+<p>コントローラクラスとは、MVCモデルでの、いわゆるコントローラです。要するに、リクエストを受信しています。</p>
+<p>「XML-RPCサーバ」でのコントローラクラスは、Method.pmという形で実装しています。
+XML-RPCリクエスト(URLは「/RPC2」)を受信した場合の処理を担当しています。</p>
+<p>Method.pm内は、以下の処理を行います。</p>
+<ol class="arabic">
+<li><p class="first">XML-RPCリクエスト受信</p>
+</li>
+<li><p class="first">「Frontier::RPCライブラリ」(後述)に「XML-RPCリクエスト」入力</p>
+</li>
+<li><dl class="first docutils">
+<dt>「Frontier::RPCライブラリ」から返却された、「出力XMLデータ」を、まるごとWebクライアントに返却</dt>
+<dd><p class="first last">XMLのHTTPレスポンス生成は、Mojoliciousのレンダラー(render)に、formatをXMLを設定すれば可能</p>
+</dd>
+</dl>
+</li>
+</ol>
+<p>lib/Xmlrpctest/Method.pmの具体的内容は以下のとおりです。</p>
+<pre class="literal-block">
+package Xmlrpctest::Method;
+use Mojo::Base 'Mojolicious::Controller';
+
+use Mojo::Home;
+
+use Frontier::RPC2;
+
+my $log = Mojo::Log-&gt;new;
+
+#外部メソッド名と内部関数の紐付け設定
+my $methods = { 'xml.rpctestplus' =&gt; \&amp;xmlrpcplus
+                   , 'xml.rpctestminus' =&gt; \&amp;xmlrpcminus
+                   , 'xml.rpctestmixed' =&gt; \&amp;xmlrpcmixed
+               };
+
+#受信
+sub process {
+    my $self = shift;
+    #my $c = $self-&gt;ctx;
+
+    $log-&gt;debug(&quot;in progress&quot;);
+
+    my $server = Frontier::RPC2-&gt;new( 'encoding' =&gt; 'UTF-8' );
+    if ( !defined $server ) {
+        $self-&gt;render_text(&quot;frontier failed&quot;);
+        return ;
+   }
+
+    my $body = $self-&gt;req-&gt;body;
+    $log-&gt;debug(&quot;body: $body &quot;);
+    #request(XML)からresponseに変換
+    my $response = $server-&gt;serve($body, $methods);
+    $log-&gt;debug(&quot;res: $response &quot;);
+
+    #HTTPレスポンスに変換
+    $self-&gt;render(text=&gt;$response,format=&gt;&quot;xml&quot;);
+
+}
+
+#API
+sub xmlrpcplus {
+   (my $a , my $b) = &#64;_;
+
+    return $a + $b;
+}
+
+sub xmlrpcminus {
+    (my $a , my $b) = &#64;_;
+
+    return $a - $b;
+}
+
+sub xmlrpcmixed {
+    (my $a , my $b) = &#64;_;
+    my &#64;c = (1,3,2);
+    my $data = {a=&gt;'b',b=&gt;$a,c=&gt;\&#64;c};
+
+    return $data;
+}
+</pre>
+<p>「Frontier::RPCライブラリ」の詳細は、今回は扱いません。「Frontier::RPCライブラリ」とは、以下の「XML-RPCリクエスト」を受信し、「出力XMLデータ」(XML-RPCレスポンス)を生成するライブラリだと思ってください。</p>
+<p>「XML-RPCリクエスト」</p>
+<pre class="literal-block">
+body: &lt;?xml version='1.0'?&gt;
+&lt;methodCall&gt;
+&lt;methodName&gt;xml.rpctestmixed&lt;/methodName&gt;
+&lt;params&gt;
+&lt;param&gt;
+&lt;value&gt;&lt;int&gt;1500000000&lt;/int&gt;&lt;/value&gt;
+&lt;/param&gt;
+&lt;param&gt;
+&lt;value&gt;&lt;array&gt;&lt;data&gt;
+&lt;value&gt;&lt;int&gt;1&lt;/int&gt;&lt;/value&gt;
+&lt;value&gt;&lt;int&gt;2&lt;/int&gt;&lt;/value&gt;
+&lt;value&gt;&lt;struct&gt;
+&lt;member&gt;
+&lt;name&gt;foo&lt;/name&gt;
+&lt;value&gt;&lt;string&gt;test&lt;/string&gt;&lt;/value&gt;
+&lt;/member&gt;
+&lt;member&gt;
+&lt;name&gt;bar&lt;/name&gt;
+&lt;value&gt;&lt;string&gt;data&lt;/string&gt;&lt;/value&gt;
+&lt;/member&gt;
+&lt;/struct&gt;&lt;/value&gt;
+&lt;value&gt;&lt;int&gt;3&lt;/int&gt;&lt;/value&gt;
+&lt;/data&gt;&lt;/array&gt;&lt;/value&gt;
+&lt;/param&gt;
+&lt;/params&gt;
+&lt;/methodCall&gt;
+</pre>
+<p>「出力XMLデータ」</p>
+<pre class="literal-block">
+&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;methodResponse&gt;
+&lt;params&gt;
+&lt;param&gt;&lt;value&gt;&lt;struct&gt;
+&lt;member&gt;&lt;name&gt;c&lt;/name&gt;&lt;value&gt;&lt;array&gt;&lt;data&gt;
+&lt;value&gt;&lt;i4&gt;1&lt;/i4&gt;&lt;/value&gt;&lt;value&gt;&lt;i4&gt;3&lt;/i4&gt;&lt;/value&gt;&lt;value&gt;&lt;i4&gt;2&lt;/i4&gt;&lt;/value&gt;&lt;/da ta&gt;&lt;/array&gt;&lt;/value&gt;
+&lt;/member&gt;
+&lt;member&gt;&lt;name&gt;a&lt;/name&gt;&lt;value&gt;&lt;string&gt;b&lt;/string&gt;&lt;/value&gt;&lt;/member&gt;
+&lt;member&gt;&lt;name&gt;b&lt;/name&gt;&lt;value&gt;&lt;i4&gt;1500000000&lt;/i4&gt;&lt;/value&gt;&lt;/member&gt;
+&lt;/struct&gt;&lt;/value&gt;
+&lt;/param&gt;
+&lt;/params&gt;
+&lt;/methodResponse&gt;
+</pre>
+</div>
+</div>
+</div>
+<div class="section" id="id7">
+<h2>3. XML-RPCクライアント側</h2>
+<p>クライアント側アプリケーションは、pythonで作成しました。以下のとおり数行です。</p>
+<pre class="literal-block">
+import xmlrpc.client
+
+proxy = xmlrpc.client.ServerProxy(&quot;http://192.168.42.130:8000/RPC2&quot;)
+print(&quot;1 + 2 : %d&quot; % ( proxy.xml.rpctestplus(1,2) ))
+print(&quot;3 - 2 : %d&quot; % ( proxy.xml.rpctestminus(3,2) ))
+
+d={'foo':'test','bar':'data'}
+b=[1,2,d,3]
+
+a = proxy.xml.rpctestmixed(1500000000,b)
+
+print( a )
+</pre>
+<p>Windows上で起動した結果は以下の通りです。</p>
+<pre class="literal-block">
+&gt;xmlrpc_client.py
+1 + 2 : 3
+3 - 2 : 1
+{'a': 'b', 'c': [1, 3, 2], 'b': 1500000000}
+</pre>
+</div>
+<div class="section" id="id8">
+<h2>4. Mojoliciousで、はまったところ</h2>
+<p>私はサンプルを理解する際に、ファイル名や関数を変えて動作させることがあります。その際に、ファイル/関数の命名規則等を知らなくて、ちょっとはまることがあります。</p>
+<p>Mojociliousの場合は、以下が分かりませんでした。</p>
+<ul class="simple">
+<li>アプリケーションの最初がどこなのか分からなかった。</li>
+<li>コントローラクラスの追加方法が分からなかった。</li>
+</ul>
+<p>アプリケーションの最初とは、要するに全体処理の開始点です。起動したら、まずどこから処理が開始されるか、ですが、「XML-RPCサーバ」では、lib/Xmlrpctest.pmが該当します。</p>
+<p>コントローラクラスの追加方法は、上記の通り、アプリケーションクラスのstartup関数で、ルート($self-&gt;routes)に設定することにより行えます。</p>
+<p>ちなみに、雛形ですとlib/「アプリケーション名」/Example.pmがコントローラとして
+あらかじめ追加されています。</p>
+</div>
+<div class="section" id="id9">
+<h2>5.おわりに</h2>
+<p>これで、一通りMojoliciousでのアプリケーション作成は可能になったと思います。</p>
+<p>次は、XML-RPCサーバとしてではなく、Mojoliciousのプラグイン機能を使用してXML-RPCを実装しようと思います。</p>
+</div>
+</div>
+	
+        <hr>
+
+    </div>
+        </div>
+        
+        <div class="span3">
+
+            <div class="well" style="padding: 8px 0; background-color: #FBFBFB;">
+            <ul class="nav nav-list">
+                <li class="nav-header"> 
+                Site
+                </li>
+            
+                <li><a href="/archives.html">Archives</a>
+                <li><a href="/tags.html">Tags</a>
+
+
+
+
+            </ul>
+            </div>
+
+
+            <div class="well" style="padding: 8px 0; background-color: #FBFBFB;">
+            <ul class="nav nav-list">
+                <li class="nav-header"> 
+                Categories
+                </li>
+                
+                <li><a href="/category/mojolicious-xml-rpc-plugin.html">Mojolicious XML-RPC Plugin</a></li>
+                <li><a href="/category/monitoring-dataanalysys.html">monitoring dataanalysys</a></li>
+                <li><a href="/category/python-perl-javascript.html">python perl javascript</a></li>
+                <li><a href="/category/ruby-ingress.html">ruby ingress</a></li>
+                <li><a href="/category/ruby-kibana-elasticsearch-dataanalysys.html">ruby kibana elasticsearch dataanalysys</a></li>
+                   
+            </ul>
+            </div>
+
+
+            <div class="well" style="padding: 8px 0; background-color: #FBFBFB;">
+            <ul class="nav nav-list">
+                <li class="nav-header"> 
+                Links
+                </li>
+            
+                <li><a href="http://getpelican.com/">Pelican</a></li>
+                <li><a href="http://python.org/">Python.org</a></li>
+                <li><a href="http://jinja.pocoo.org/">Jinja2</a></li>
+                <li><a href="#">You can modify those links in your config file</a></li>
+            </ul>
+            </div>
+
+
+            <div class="social">
+            <div class="well" style="padding: 8px 0; background-color: #FBFBFB;">
+            <ul class="nav nav-list">
+                <li class="nav-header"> 
+                Social
+                </li>
+           
+                <li><a href="#">You can add links in your config file</a></li>
+                <li><a href="#">Another social link</a></li>
+            </ul>
+            </div>
+            </div>
+
+        </div>  
+    </div>     </div> 
+<footer>
+<br />
+<p><a href="">torofielder blog</a> &copy; torofield 2015</p>
+</footer>
+
+</div> <!-- /container -->
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+<script src="/theme/bootstrap-collapse.js"></script>
+ 
+</body>
+</html>

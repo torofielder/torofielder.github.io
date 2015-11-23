@@ -98,17 +98,7 @@ by <a class="url fn" href="/author/torofield.html">torofield</a>
 <div class="section" id="id3">
 <h3>環境構築</h3>
 <p>まず、外部ネットワークに接続できない場合でも、インストールできる環境を設定します。</p>
-<p>手始めに、cpanmコマンドをインストールします。export部分は.bashrcに入れてもよいです。</p>
-<pre class="literal-block">
-$ export PERL_LOCAL_LIB_ROOT=&quot;$HOME/perl5&quot;;
-$ export PERL5LIB=&quot;$HOME/perl5/x86_64-linux-gnu-thread-multi:$HOME/perl5:$HOME/perl5/lib/perl5&quot;;
-$ export PERL_MM_OPT=&quot;INSTALL_BASE=$HOME/perl5&quot;;
-$ export PATH=&quot;$HOME/perl5/bin:$HOME/mybin:$PATH&quot;;
-$ mkdir ~/mybin &amp;&amp; cd ~/mybin
-$ wget https://raw.github.com/miyagawa/cpanminus/master/cpanm
-$ chmod +x cpanm
-</pre>
-<p>以下を参考にして、その他モジュールをインストールします。</p>
+<p>perlblew、その他モジュールをインストールします。</p>
 <p><a class="reference external" href="http://qiita.com/kayama0fa&#64;github/items/27e0c1f19d8484c30896">http://qiita.com/kayama0fa&#64;github/items/27e0c1f19d8484c30896</a></p>
 <pre class="literal-block">
 $ wget http://xrl.us/perlbrewinstall
@@ -117,26 +107,30 @@ $ cat &gt;&gt;~/.bashrc_profile
 source $HOME/perl5/perlbrew/etc/bashrc
 $ source $HOME/perl5/perlbrew/etc/bashrc
 $ perlbrew self-upgrade
-$ perlbrew install perl-5.18.4
+Your perlbrew is up-to-date.
+$ perlbrew install perl-5.22.0
 (時間がかかる)
-$ perlbrew switch perl-5.18.4
-(cpanmが使用するperlをperlbrewに変更)
+$ perlbrew switch perl-5.22.0
 $ vi ~/.cpan/CPAN/MyConfig.pm
 (build_cacheを1000に)
 $ cpan
 &gt; make Perl::Critic
-&gt; make List::MoreUtils
 &gt; make Test::Perl::Critic
 &gt; make YAML
 &gt; make Perl::Tidy
-$ ls -lR ~/.cpan/sources
+$ ls -lR ~/.cpan/sources | grep Critic
+-rw-rw-r-- 1 tanino tanino 646552 11月 23 15:31 Perl-Critic-1.126.tar.gz
+-rw-rw-r-- 1 tanino tanino  21467  2月  4  2015 Test-Perl-Critic-1.03.tar.gz     $ ls -lR ~/.cpan/sources | grep Tidy
+-rw-rw-r-- 1 tanino tanino 425224 11月 23 15:51 Perl-Tidy-20150815.tar.gz
 $ cd ~/.cpan/sources
 $ tar czf ~/cpan_sources.tar.gz *
 (対象マシンにcpan_source.tar.gzを転送)
 </pre>
 <p>対象マシンにて以下を行います。</p>
 <pre class="literal-block">
-(対象マシンにcpanmをインストール後)
+(対象マシンにcpanmをインストール)
+$ perlbrew install-cpanm
+(cpanのキャッシュからインストール)
 $ mkdir -p ~/.cpan/sources
 $ cd ~/.cpan/sources ; tar xvfz ~/cpan_sources.tar.gz
 $ cpanm --mirror ~/.cpan/sources Perl::Critic
@@ -347,6 +341,7 @@ run(host='0.0.0.0', port=8080, debug=True, reloader=True)
                 Categories
                 </li>
                 
+                <li><a href="/category/mojolicious-xml-rpc-plugin.html">Mojolicious XML-RPC Plugin</a></li>
                 <li><a href="/category/monitoring-dataanalysys.html">monitoring dataanalysys</a></li>
                 <li><a href="/category/python-perl-javascript.html">python perl javascript</a></li>
                 <li><a href="/category/ruby-ingress.html">ruby ingress</a></li>

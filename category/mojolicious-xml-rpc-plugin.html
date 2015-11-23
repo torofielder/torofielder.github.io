@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="utf-8">
+    <title>torofielder blog</title>
+    <meta name="description" content="">
+    <meta name="author" content="torofield">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
+    <!--[if lt IE 9]>
+    <script src="/theme/html5.js"></script>
+    <![endif]-->
+
+    <!-- Le styles -->
+    <link href="/theme/bootstrap.min.css" rel="stylesheet">
+    <link href="/theme/bootstrap.min.responsive.css" rel="stylesheet">
+    <link href="/theme/local.css" rel="stylesheet">
+    <link href="/theme/pygments.css" rel="stylesheet">
+
+    <!-- So Firefox can bookmark->"abo this site" -->
+
+</head>
+
+<body>
+
+<div class="navbar">
+    <div class="navbar-inner">
+    <div class="container">
+
+         <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+             <span class="icon-bar"></span>
+             <span class="icon-bar"></span>
+             <span class="icon-bar"></span>
+         </a>
+
+        <a class="brand" href="">torofielder blog</a>
+
+        <div class="nav-collapse">
+        <ul class="nav">
+            
+        </ul>
+        </div>
+        
+    </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="content">
+    <div class="row">
+
+        <div class="span9">
+        
+
+        
+
+
+    <div class='article'>
+        <div class="content-title">
+            <a href="/Mojolicious XML-RPC Plugin2.html"><h1>Mojolicious XML-RPC Pluginの開発(2)</h1></a>
+月 23 11月 2015
+
+by <a class="url fn" href="/author/torofield.html">torofield</a>
+ 
+
+
+ 
+        </div>
+        
+        <div><div class="section" id="id1">
+<h2>はじめに</h2>
+<p>「Mojolicious XML-RPC Pluginの開発」のその2です。</p>
+<p>本内容では、前回の内容を踏まえ、XML-RPC実装を、Mojoliciousのプラグイン機能を使用して実装しようと思います。</p>
+<p>説明は以下の順序で行います。</p>
+<ol class="arabic simple">
+<li>Mojolicious XML-RPC Plugin(以下 「FrontierXMLRPC」)とは</li>
+<li>「FrontierXMLRPC」作成方法</li>
+<li>「FrontierXMLRPC」使用方法</li>
+<li>「FrontierXMLRPC」テスト手順</li>
+</ol>
+</div>
+<div class="section" id="mojolicious-xml-rpc-plugin">
+<h2>1. Mojolicious XML-RPC Pluginとは</h2>
+<p>(その1)で行ったXML-RPCの実装を、以下の順序で再実装しようという試みです。</p>
+<ol class="arabic simple">
+<li>「FrontierXMLRPC」を作成する。</li>
+<li>「FrontierXMLRPC」上でXML-RPC関数を実装する。</li>
+</ol>
+<p>「FrontierXMLRPC」プラグインは以下を目標に作成しました。</p>
+<ul>
+<li><dl class="first docutils">
+<dt>単純にMojoliciousのプラグイン作成お勉強</dt>
+<dd><p class="first last">XML-RPCプラグインなんてどこかにはあると思いますが
+軽く調べたところ、目標に合致したものは公開されてないっぽい。</p>
+</dd>
+</dl>
+</li>
+<li><p class="first">簡単設定で関数をexportできる。</p>
+</li>
+<li><p class="first">XML入出力を記録できる。記録する処理をコールバックできる。</p>
+</li>
+</ul>
+<div class="section" id="frontierxmlrpc">
+<h3>1.1 「FrontierXMLRPC」概要図</h3>
+<p>以下に「FrontierXMLRPC」の概念を示します。</p>
+<pre class="literal-block">
+XML-RPCクライアント(python)
+ -&gt; Mojolicious雛形
+  -&gt; 「FrontierXMLRPC」読み込み
+   -&gt; 「FrontierXMLRPC」register関数
+    -&gt; コールバッククラス
+</pre>
+<p>「「FrontierXMLRPC」読み込み」については、「3.「FrontierXMLRPC」使用方法」
+にて説明します。</p>
+<p>その他は、「2.「FrontierXMLRPC」作成方法」にて説明します。</p>
+</div>
+<div class="section" id="id2">
+<h3>1.2 本文書でのサンプルについて</h3>
+<p>サンプルの実装は、[<a class="reference external" href="./mojo-xmlrpcpluginsample.tar.gz">mojoxmlrpcplugin</a>]に置いてあります。</p>
+<p>サンプルには以下の内容が入っています。</p>
+<ul class="simple">
+<li>「FrontierXMLRPC」Mojolicious Plugin ソース(以下: FrontierXMLRPC)</li>
+<li>「テスト用アプリケーション」(FrontierXMLRPC/t/combined/)
+-&gt;「FrontierXMLRPC」結合テスト用</li>
+</ul>
+</div>
+</div>
+<div class="section" id="id3">
+<h2>2. 「FrontierXMLRPC」作成方法</h2>
+<p>「FrontierXMLRPC」は以下のように作成しました。</p>
+<ul class="simple">
+<li>Mojolicious Plugin 雛形作成</li>
+<li>「FrontierXMLRPC」register関数作成</li>
+<li>コールバッククラス作成</li>
+</ul>
+<p>以下に、個々の作成内容について説明します。</p>
+<div class="section" id="id4">
+<h3>2.1 「FrontierXMLRPC」作成手順詳細</h3>
+<div class="section" id="mojolicious-plugin">
+<h4>(1) Mojolicious Plugin 雛形作成</h4>
+<p>最初に、以下のコマンドで、Mojolicious Pluginの雛形を作成します。</p>
+<pre class="literal-block">
+mojo generate plugin FrontierXMLRPC
+</pre>
+<p>Mojolicious Pluginの名前を、「FrontierXMLRPC」としています。</p>
+<p>コマンドを起動すると、以下のようなファイルが生成されます。</p>
+<pre class="literal-block">
+FrontierXMLRPC/
+ Makefile.PL
+ lib/
+  Mojolicious/
+   Plugin/
+    FrontierXMLRPC.pm
+ t/
+  basic.t
+</pre>
+<p>主に修正/追加するファイルは、以下の通りです。</p>
+<ul class="simple">
+<li>lib/Mojolicious/Plugin/FrontierXMLRPC.pm</li>
+<li>lib/Mojolicious/Plugin/FrontierXMLRPC/RPC2.pm(追加)</li>
+<li>t/01_load.t,02_xml.t</li>
+</ul>
+<p>その他はサンプルに格納されているので、詳細はサンプルを確認してください。</p>
+</div>
+<div class="section" id="frontierxmlrpcregister-frontierxmlrpc-pm">
+<h4>(2)「FrontierXMLRPC」register関数 修正(FrontierXMLRPC.pm)</h4>
+<p>Mojolicious Pluginの中心は「register」という関数です。雛形のFrontierXMLRPC.pm内、resister関数を以下のように変更します。</p>
+<pre class="literal-block">
+package Mojolicious::Plugin::FrontierXMLRPC;
+use Mojo::Base 'Mojolicious::Plugin';
+
+our $VERSION = '0.01';
+
+use Frontier::RPC2;
+
+my $log = Mojo::Log-&gt;new;
+
+sub register {
+   my ($self,$app,$conf) = &#64;_;
+
+   #$log-&gt;fatal(&quot;FrontierXMLRPC\n&quot;);
+
+   # XMLRPC
+   my $server = Frontier::RPC2-&gt;new( 'encoding' =&gt; 'UTF-8' );
+   if ( !defined $server ) {
+       return ;
+   }
+
+   # parameter settings
+   $self-&gt;{'method'} = $conf-&gt;{methods};
+   $self-&gt;{'cb'} = $conf-&gt;{cb};
+   $self-&gt;{'rpc2'} = $server;
+
+   my $r = $app-&gt;routes;
+
+   # prepare &quot;/RPC2&quot;
+   $r-&gt;post(&quot;/RPC2&quot;)-&gt;to(namespace =&gt; 'Mojolicious::Plugin::FrontierXMLRPC::Rpc2'
+       , action=&gt;'proxy_xmlrpc',
+       frontier_xmlrpc_plugin =&gt; $self,
+   );
+
+   return ;
+}
+
+1;
+__END__
+</pre>
+<p>上記で重要なところは、以下の二つです。</p>
+<ul>
+<li><dl class="first docutils">
+<dt>「FrontierXMLRPC」register関数呼び出し時の情報を「stash-&gt;frontier_xmlrpc_plugin」</dt>
+<dd><p class="first last">(後述)経由でコンテキスト($self)に設定する</p>
+</dd>
+</dl>
+</li>
+<li><p class="first">コントローラクラスの追加(&quot;/RPC2&quot;時)</p>
+</li>
+</ul>
+<p>「FrontierXMLRPC」Mojolicious Pluginがコントローラクラスに値を渡す方法として
+「stash-&gt;frontier_xmlrpc_plugin」を使用しています。</p>
+<p>以下で、register関数から情報を受け渡す対象の、「FrontierXMLRPC」コントローラクラスについて、説明します。</p>
+</div>
+<div class="section" id="frontierxmlrpc-rpc2-pm">
+<h4>(3)「FrontierXMLRPC」コントローラクラス(RPC2.pm)追加</h4>
+<p>「FrontierXMLRPC」コントローラクラスは、(その1)で追加した、コントローラクラス(Method.pm)と、基本は一緒です。</p>
+<ol class="arabic simple">
+<li>XML-RPCリクエスト受信</li>
+<li>Frontier::RPCライブラリに入力</li>
+<li>Frontier::RPCライブラリから返却された、XML-RPCレスポンスを、まるごとWebクライアントに返却</li>
+</ol>
+<p>「XML-RPCサーバ」のコントロールクラスと「FrontierXMLRPC」のコントローラクラスとの違いは以下の通りです。</p>
+<ul>
+<li><dl class="first docutils">
+<dt>起動時のregister関数から情報受信</dt>
+<dd><p class="first last">stash-&gt;{frontier_xmlrpc_plugin}取得</p>
+</dd>
+</dl>
+</li>
+<li><p class="first">コールバック実装追加</p>
+</li>
+</ul>
+<p>「stash」とは、Mojolicious上のアプリケーションで、現在のリクエストが使用する値を、保存するための領域です。</p>
+<p>本プラグインでは、「FrontierXMLRPC」register関数(プラグイン開始時)で作成した情報を、アプリケーション経由でコントローラへ受け渡すための領域として使用しています。</p>
+<p>&quot;frontier_xmlrpc_plugin&quot;としたのは、本プラグインで名づけたものです。(もっといい方法があるのかもしれません)</p>
+<p>コールバックは、HTTPリクエスト/レスポンスの記録用コールバックのために追加しています。</p>
+<p>具体的な実装は以下の通りです。</p>
+<pre class="literal-block">
+# XMLRPC controller
+package Mojolicious::Plugin::FrontierXMLRPC::Rpc2;
+use Mojo::Base 'Mojolicious::Controller';
+
+use Frontier::RPC2;
+use Data::Dumper;
+
+sub proxy_xmlrpc {
+
+   my $self = shift;
+
+   my $plugin = $self-&gt;stash-&gt;{frontier_xmlrpc_plugin};
+   if ( ! defined $plugin ) {
+       return;
+   }
+
+   my $methods = $plugin-&gt;{'method'};
+   my $server  = $plugin-&gt;{'rpc2'};
+   my $cb  = $plugin-&gt;{'cb'};
+   if ( ! defined $server or ! defined $methods ) {
+       return;
+   }
+
+   my $body = $self-&gt;req-&gt;body;
+
+   #translate from request(XML) to response
+   my  $response = $server-&gt;serve($body, $methods);
+
+   #modify HTTP response
+   $self-&gt;render(text=&gt;$response,format=&gt;&quot;xml&quot;);
+
+   # callback
+   if ( defined $cb ) {
+       &amp;$cb($body,$response);
+   }
+
+}
+
+1;
+</pre>
+</div>
+</div>
+</div>
+<div class="section" id="id5">
+<h2>3.「FrontierXMLRPC」使用手順</h2>
+<p>「FrontierXMLRPC」をアプリケーションで使用する方法を示します。</p>
+<div class="section" id="id6">
+<h3>3.1 インストール方法</h3>
+<p>以下の手順でインストールします。</p>
+<pre class="literal-block">
+$ tar xvfz mojo-xmlrpcpluginsample.tar.gz
+$ cd FrontierXMLRPC
+$ make Makefile.PL
+$ make
+$ make install
+</pre>
+</div>
+<div class="section" id="id7">
+<h3>3.2 「FrontierXMLRPC」使用方法</h3>
+<p>「FrontierXMLRPC」は以下のように使用します。</p>
+<div class="section" id="id8">
+<h4>(1)「FrontierXMLRPC」読み込み</h4>
+<p>「FrontierXMLRPC」を使用するには、アプリケーションのstartupに以下のように記述します。</p>
+<pre class="literal-block">
+#XMLRPC コールバック
+sub callback {
+   (my $req,my $res)=&#64;_;
+}
+
+sub startup {
+ my $self = shift;
+
+ #外部メソッド名と内部関数の紐付け設定
+ my $methods = { 'xml.rpctestplus' =&gt; \&amp;xmlrpcplus
+          , 'xml.rpctestminus' =&gt; \&amp;xmlrpcminus
+          , 'xml.rpctestmixed' =&gt; \&amp;xmlrpcmixed
+ };
+
+ #プラグインへのパラメータ
+ my $xconf = {
+   methods=&gt;,methods
+   callback=&gt;,\&amp;callback
+ };
+
+ $self-&gt;plugin('Mojolicious::Plugin::FrontierXMLRPC',$xconf);
+</pre>
+<p>要するに、プラグインに、引数として、XML-RPC関数を登録します。</p>
+</div>
+<div class="section" id="xml-rpc">
+<h4>(2) XML-RPC関数登録</h4>
+<p>XML-RPC関数登録の方法は以下の通りです。</p>
+<ol class="arabic simple">
+<li>XML-RPC関数の実装</li>
+<li>$methodsの記述</li>
+</ol>
+<p>methodsの記述方法は、[<a class="reference external" href="http://www.ibm.com/developerworks/jp/webservices/library/ws-xpc1">Frontier-RPC2</a>]を参考にしてください。</p>
+</div>
+</div>
+</div>
+<div class="section" id="id9">
+<h2>4. 「FrontierXMLRPC」のテスト方法</h2>
+<p>単体テストと、結合テストの手順を示します。</p>
+<div class="section" id="id10">
+<h3>(1)単体テスト</h3>
+<p>Mojoliciousには(フレームワークなので)単体テスト方法があります。
+perlの通常の単体テスト方法とほぼ変わりません。</p>
+<p>単体テストは以下のように行います。</p>
+<pre class="literal-block">
+perl t/01_load.t
+perl t/02_xml.t
+</pre>
+<p>01_load.tは、プラグイン実装が読み出せるかどうか、02_xml.tは実際にプラグインへ
+XML-RPC関数を登録し、関数が呼び出せたかどうか確認しています。</p>
+<p>実行すると以下のようになります。</p>
+<pre class="literal-block">
+$ perl t/01_load.t
+ok 1 - use Mojolicious::Plugin::FrontierXMLRPC;
+$ perl t/02_xml.t
+This is callback
+$VAR1 = '&lt;?xml version=\'1.0\'?&gt; &lt;methodCall&gt; &lt;methodName&gt;xml.rpctestplus&lt;/meth odName&gt; &lt;params&gt; &lt;param&gt; &lt;value&gt;&lt;int&gt;1&lt;/int&gt;&lt;/value&gt; &lt;/param&gt; &lt;param&gt; &lt;value&gt;&lt;i nt&gt;2&lt;/int&gt;&lt;/value&gt; &lt;/param&gt; &lt;/params&gt; &lt;/methodCall&gt;';
+$VAR1 = '&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;methodResponse&gt;
+&lt;params&gt;
+&lt;param&gt;&lt;value&gt;&lt;i4&gt;6&lt;/i4&gt;&lt;/value&gt;&lt;/param&gt;
+&lt;/params&gt;
+&lt;/methodResponse&gt;
+';
+ok 1 - post /RPC2
+ok 2 - 200 OK
+ok 3 - content is similar
+1..3
+</pre>
+<p>単体テスト全体を一度に行うなら、以下のようにします。</p>
+<pre class="literal-block">
+$ prove
+t/01_load.t .. ok
+t/02_xml.t ... ok
+All tests successful.
+Files=2, Tests=4,  2 wallclock secs ( 0.08 usr  0.05 sys +  1.61 cusr  0.27 csy s =  2.01 CPU)
+Result: PASS
+</pre>
+<div class="section" id="id11">
+<h4>(2)結合テスト</h4>
+<p>結合テストは、以下の手順で行いました。</p>
+<ul class="simple">
+<li>「FrontierXMLRPC」をインストール</li>
+<li>テスト用アプリケーションにて、「XML-RPCサーバ」と同様の関数を定義</li>
+<li>テスト用アプリケーションを起動した後、XML-RPCクライアントを起動する。</li>
+</ul>
+<p>サンプルにある、テスト用アプリケーションを起動した結果が以下の通りです。
+「192.168.42.130:50030」は環境に合わせて適宜変えてください。</p>
+<pre class="literal-block">
+$ cd FrontierXMLRPC/t/combined/fxmlrpc_test/
+$ script/fxmlrpc_test daemon --listen http://192.168.42.130:50030
+</pre>
+<p>xmlrpc_client.pyを上記のURLにしてアクセスした結果が以下です。</p>
+<pre class="literal-block">
+&gt;xmlrpc_client.py
+1 + 2 : 3
+3 - 2 : 1
+{'a': 'b', 'c': [1, 3, 2], 'b': 1500000000}
+</pre>
+</div>
+<div class="section" id="id12">
+<h4>(3)サンプルの作成方法</h4>
+<p>参考に、結合テスト用サンプルは以下のよう作成しました。</p>
+<pre class="literal-block">
+$ mojo generate app FxmlrpcTest
+ [mkdir] /home/tanino/mojo/FrontierXMLRPC-test/fxmlrpc_test/script
+ [write] /home/tanino/mojo/FrontierXMLRPC-test/fxmlrpc_test/script/fxmlrpc_test
+ [chmod] fxmlrpc_test/script/fxmlrpc_test 744
+ [mkdir] /home/tanino/mojo/FrontierXMLRPC-test/fxmlrpc_test/lib
+ [write] /home/tanino/mojo/FrontierXMLRPC-test/fxmlrpc_test/lib/FxmlrpcTest.pm
+ [mkdir] /home/tanino/mojo/FrontierXMLRPC-test/fxmlrpc_test/lib/FxmlrpcTest
+ [write] /home/tanino/mojo/FrontierXMLRPC-test/fxmlrpc_test/lib/FxmlrpcTest/Example.pm
+ [mkdir] /home/tanino/mojo/FrontierXMLRPC-test/fxmlrpc_test/t
+ [write] /home/tanino/mojo/FrontierXMLRPC-test/fxmlrpc_test/t/basic.t
+ [mkdir] /home/tanino/mojo/FrontierXMLRPC-test/fxmlrpc_test/log
+ [mkdir] /home/tanino/mojo/FrontierXMLRPC-test/fxmlrpc_test/public
+ [write] /home/tanino/mojo/FrontierXMLRPC-test/fxmlrpc_test/public/index.html
+ [mkdir] /home/tanino/mojo/FrontierXMLRPC-test/fxmlrpc_test/templates/layouts
+ [write] /home/tanino/mojo/FrontierXMLRPC-test/fxmlrpc_test/templates/layouts/default.html.ep
+ [mkdir] /home/tanino/mojo/FrontierXMLRPC-test/fxmlrpc_test/templates/example
+ [write] /home/tanino/mojo/FrontierXMLRPC-test/fxmlrpc_test/templates/example/welcome.html.ep
+</pre>
+</div>
+</div>
+</div>
+<div class="section" id="id13">
+<h2>5. 終わりに</h2>
+<p>perlのお勉強として、Mojoliciousを題材にしました。</p>
+<p>意外と手軽に扱えるので、いいのではないかと思います。</p>
+</div>
+</div>
+        <hr />
+    </div>
+		
+
+ 
+        
+
+ 
+
+    <div class='article'>
+        <a href="/Mojolicious XML-RPC Plugin.html"><h2>Mojolicious XML-RPC Pluginの開発(1)</h2></a>
+        <div class= "well small"> 月 23 11月 2015
+
+by <a class="url fn" href="/author/torofield.html">torofield</a>
+ 
+
+
+ </div>
+        <div class="summary"><div class="section" id="id1">
+<h2>はじめに</h2>
+<p>最近、お仕事関連で、perlとWebアプリケーションを触っています。</p>
+<p>両方一度にお勉強、ということで、perlのWAF(Webアプリケーションフレームワーク)を調べてみようと思いました。
+ここでは、perlのMojolicious上で動作する、XML-RPC Pluginを作ってみようと思います。</p>
+<p>説明は以下の順(1.-&gt;2.-&gt;3.)で行っていきます。記述内容が多くなってしまったので、(1)と(2)に分けます。</p>
+<ol class="arabic simple">
+<li>Mojoliciousとは -&gt;(1)</li>
+<li>Mojolicious上でXML-RPC関数を直接実装(Pluginなし) -&gt;(1)</li>
+<li>Mojolicious XML-RPC Plugin経由でXML-RPC実装 -&gt;(2)</li>
+</ol>
+<p>サンプルの実装は、[<a class="reference external" href="./xmlrpctest.tar.gz">mojoxmlrpc</a>]に置いてあります。</p>
+</div>
+<div class="section" id="mojolicious">
+<h2>1. Mojoliciousとは</h2>
+<p>&quot;Mojolicious&quot;とはperlのWAFです。なんとなくモダンそうなので調べてみました。</p>
+<p>Mojolicious(<a class="reference external" href="http://mojolicio.us/">http://mojolicio.us/</a>)については、[<a class="reference external" href="https://github.com/yuki-kimoto/mojolicious-guides-japanese/wiki">Mojoliciousの日本語版wiki</a>]によくまとまってます。インストール方法から概要まで、一通り記述があります。</p>
+</div>
+<div class="section" id="xml-rpc">
+<h2>1 ...</h2></div> <a class="btn btn-info xsmall" href="/Mojolicious XML-RPC Plugin.html">read more</a></div>
+    </div>	
+				
+<div class="pagination">
+<ul>
+    <li class="prev disabled"><a href="#">&larr; Previous</a></li>
+
+    <li class="active"><a href="/category/mojolicious-xml-rpc-plugin.html">1</a></li>
+
+    <li class="next disabled"><a href="#">&rarr; Next</a></li>
+
+</ul>
+</div>
+ 
+  
+        </div>
+        
+        <div class="span3">
+
+            <div class="well" style="padding: 8px 0; background-color: #FBFBFB;">
+            <ul class="nav nav-list">
+                <li class="nav-header"> 
+                Site
+                </li>
+            
+                <li><a href="/archives.html">Archives</a>
+                <li><a href="/tags.html">Tags</a>
+
+
+
+
+            </ul>
+            </div>
+
+
+            <div class="well" style="padding: 8px 0; background-color: #FBFBFB;">
+            <ul class="nav nav-list">
+                <li class="nav-header"> 
+                Categories
+                </li>
+                
+                <li><a href="/category/mojolicious-xml-rpc-plugin.html">Mojolicious XML-RPC Plugin</a></li>
+                <li><a href="/category/monitoring-dataanalysys.html">monitoring dataanalysys</a></li>
+                <li><a href="/category/python-perl-javascript.html">python perl javascript</a></li>
+                <li><a href="/category/ruby-ingress.html">ruby ingress</a></li>
+                <li><a href="/category/ruby-kibana-elasticsearch-dataanalysys.html">ruby kibana elasticsearch dataanalysys</a></li>
+                   
+            </ul>
+            </div>
+
+
+            <div class="well" style="padding: 8px 0; background-color: #FBFBFB;">
+            <ul class="nav nav-list">
+                <li class="nav-header"> 
+                Links
+                </li>
+            
+                <li><a href="http://getpelican.com/">Pelican</a></li>
+                <li><a href="http://python.org/">Python.org</a></li>
+                <li><a href="http://jinja.pocoo.org/">Jinja2</a></li>
+                <li><a href="#">You can modify those links in your config file</a></li>
+            </ul>
+            </div>
+
+
+            <div class="social">
+            <div class="well" style="padding: 8px 0; background-color: #FBFBFB;">
+            <ul class="nav nav-list">
+                <li class="nav-header"> 
+                Social
+                </li>
+           
+                <li><a href="#">You can add links in your config file</a></li>
+                <li><a href="#">Another social link</a></li>
+            </ul>
+            </div>
+            </div>
+
+        </div>  
+    </div>     </div> 
+<footer>
+<br />
+<p><a href="">torofielder blog</a> &copy; torofield 2015</p>
+</footer>
+
+</div> <!-- /container -->
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+<script src="/theme/bootstrap-collapse.js"></script>
+ 
+</body>
+</html>

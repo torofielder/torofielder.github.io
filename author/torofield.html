@@ -384,9 +384,8 @@ by <a class="url fn" href="/author/torofield.html">torofield</a>
 <div class="section" id="id3">
 <h3>環境構築</h3>
 <p>まず、外部ネットワークに接続できない場合でも、インストールできる環境を設定します。</p>
-<p>手始めに、cpanmコマンドをインストールします。export部分は.bashrcに入れてもよいです。</p>
-<pre class="literal-block">
-$ export PERL_LOCAL_LIB_ROOT=&quot;$HOME ...</pre></div></div> <a class="btn btn-info xsmall" href="/sukuriputonoomian-qiang-sono2-wen-fa-chietsukuzheng-xing-tsuru-insutorumatome.html">read more</a></div>
+<p>perlblew、その他モジュールをインストールします。</p>
+<p><a class="reference external" href="http://qiita.com/kayama0fa&#64;github/items/27e0c1f19d8484c30896">http://qiita.com/kayama0fa&#64;github ...</a></p></div></div> <a class="btn btn-info xsmall" href="/sukuriputonoomian-qiang-sono2-wen-fa-chietsukuzheng-xing-tsuru-insutorumatome.html">read more</a></div>
     </div>	
 				
 
@@ -443,6 +442,98 @@ by <a class="url fn" href="/author/torofield.html">torofield</a>
 <p>手始めに、cpanmコマンドをインストールします。export部分は.bashrcに入れてもよいです。</p>
 <pre class="literal-block">
 $ export PERL_LOCAL_LIB_ROOT=&quot;$HOME/perl5 ...</pre></div></div> <a class="btn btn-info xsmall" href="/スクリプトごと 文法チェック/整形 ツール　インストールまとめ.html">read more</a></div>
+    </div>	
+				
+
+ 
+        
+
+ 
+
+    <div class='article'>
+        <a href="/Mojolicious XML-RPC Plugin2.html"><h2>Mojolicious XML-RPC Pluginの開発(2)</h2></a>
+        <div class= "well small"> 月 23 11月 2015
+
+by <a class="url fn" href="/author/torofield.html">torofield</a>
+ 
+
+
+ </div>
+        <div class="summary"><div class="section" id="id1">
+<h2>はじめに</h2>
+<p>「Mojolicious XML-RPC Pluginの開発」のその2です。</p>
+<p>本内容では、前回の内容を踏まえ、XML-RPC実装を、Mojoliciousのプラグイン機能を使用して実装しようと思います。</p>
+<p>説明は以下の順序で行います。</p>
+<ol class="arabic simple">
+<li>Mojolicious XML-RPC Plugin(以下 「FrontierXMLRPC」)とは</li>
+<li>「FrontierXMLRPC」作成方法</li>
+<li>「FrontierXMLRPC」使用方法</li>
+<li>「FrontierXMLRPC」テスト手順</li>
+</ol>
+</div>
+<div class="section" id="mojolicious-xml-rpc-plugin">
+<h2>1. Mojolicious XML-RPC Pluginとは</h2>
+<p>(その1)で行ったXML-RPCの実装を、以下の順序で再実装しようという試みです。</p>
+<ol class="arabic simple">
+<li>「FrontierXMLRPC」を作成する。</li>
+<li>「FrontierXMLRPC」上でXML-RPC関数を実装する。</li>
+</ol>
+<p>「FrontierXMLRPC」プラグインは以下を目標に作成しました。</p>
+<ul>
+<li><dl class="first docutils">
+<dt>単純にMojoliciousのプラグイン作成お勉強</dt>
+<dd><p class="first last">XML-RPCプラグインなんてどこかにはあると思いますが
+軽く調べたところ、目標に合致したものは公開されてないっぽい。</p>
+</dd>
+</dl>
+</li>
+<li><p class="first">簡単設定で関数をexportできる。</p>
+</li>
+<li><p class="first">XML入出力を記録できる。記録する処理をコールバックできる。</p>
+</li>
+</ul>
+<div class="section" id="frontierxmlrpc">
+<h3>1.1 「FrontierXMLRPC」概要図</h3>
+<p>以下に「FrontierXMLRPC」の概念を示します。</p>
+<pre class="literal-block">
+XML-RPCクライアント ...</pre></div></div> <a class="btn btn-info xsmall" href="/Mojolicious XML-RPC Plugin2.html">read more</a></div>
+    </div>	
+				
+
+ 
+        
+
+ 
+
+    <div class='article'>
+        <a href="/Mojolicious XML-RPC Plugin.html"><h2>Mojolicious XML-RPC Pluginの開発(1)</h2></a>
+        <div class= "well small"> 月 23 11月 2015
+
+by <a class="url fn" href="/author/torofield.html">torofield</a>
+ 
+
+
+ </div>
+        <div class="summary"><div class="section" id="id1">
+<h2>はじめに</h2>
+<p>最近、お仕事関連で、perlとWebアプリケーションを触っています。</p>
+<p>両方一度にお勉強、ということで、perlのWAF(Webアプリケーションフレームワーク)を調べてみようと思いました。
+ここでは、perlのMojolicious上で動作する、XML-RPC Pluginを作ってみようと思います。</p>
+<p>説明は以下の順(1.-&gt;2.-&gt;3.)で行っていきます。記述内容が多くなってしまったので、(1)と(2)に分けます。</p>
+<ol class="arabic simple">
+<li>Mojoliciousとは -&gt;(1)</li>
+<li>Mojolicious上でXML-RPC関数を直接実装(Pluginなし) -&gt;(1)</li>
+<li>Mojolicious XML-RPC Plugin経由でXML-RPC実装 -&gt;(2)</li>
+</ol>
+<p>サンプルの実装は、[<a class="reference external" href="./xmlrpctest.tar.gz">mojoxmlrpc</a>]に置いてあります。</p>
+</div>
+<div class="section" id="mojolicious">
+<h2>1. Mojoliciousとは</h2>
+<p>&quot;Mojolicious&quot;とはperlのWAFです。なんとなくモダンそうなので調べてみました。</p>
+<p>Mojolicious(<a class="reference external" href="http://mojolicio.us/">http://mojolicio.us/</a>)については、[<a class="reference external" href="https://github.com/yuki-kimoto/mojolicious-guides-japanese/wiki">Mojoliciousの日本語版wiki</a>]によくまとまってます。インストール方法から概要まで、一通り記述があります。</p>
+</div>
+<div class="section" id="xml-rpc">
+<h2>1 ...</h2></div> <a class="btn btn-info xsmall" href="/Mojolicious XML-RPC Plugin.html">read more</a></div>
     </div>	
 				
 
@@ -681,6 +772,7 @@ $ /usr/sbin/td-agent-gem install fluent-plugin-elasticsearch fluent-plugin-dstat
                 Categories
                 </li>
                 
+                <li><a href="/category/mojolicious-xml-rpc-plugin.html">Mojolicious XML-RPC Plugin</a></li>
                 <li><a href="/category/monitoring-dataanalysys.html">monitoring dataanalysys</a></li>
                 <li><a href="/category/python-perl-javascript.html">python perl javascript</a></li>
                 <li><a href="/category/ruby-ingress.html">ruby ingress</a></li>
