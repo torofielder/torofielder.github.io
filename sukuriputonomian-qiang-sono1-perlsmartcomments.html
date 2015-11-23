@@ -104,15 +104,14 @@ by <a class="url fn" href="/author/torofield.html">torofield</a>
 <pre class="literal-block">
 vi a.pl
 #!/usr/bin/perl
-
 use Smart::Comments;
-
 my $a=1;
 ### $a
 </pre>
-<p>　　$ perl a.pl</p>
-<blockquote>
-### $a: 1</blockquote>
+<dl class="docutils">
+<dt>　　$ perl a.pl</dt>
+<dd>### $a: 1</dd>
+</dl>
 <p>そして、デバッグ文を消したければ、use Smart::Commentsをコメントアウトすればデバック文は消えます。
 (もともと#はコメントですし)</p>
 <p>なお、使用方法としては、use Smart::Comments;とするのではなく、以下のように起動時に
