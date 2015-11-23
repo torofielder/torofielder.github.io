@@ -107,11 +107,10 @@ vi a.pl
 use Smart::Comments;
 my $a=1;
 ### $a
+(上記を保存)
+$ perl a.pl
+### $a: 1
 </pre>
-<dl class="docutils">
-<dt>　　$ perl a.pl</dt>
-<dd>### $a: 1</dd>
-</dl>
 <p>そして、デバッグ文を消したければ、use Smart::Commentsをコメントアウトすればデバック文は消えます。
 (もともと#はコメントですし)</p>
 <p>なお、使用方法としては、use Smart::Comments;とするのではなく、以下のように起動時に
