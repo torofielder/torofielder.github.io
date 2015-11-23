@@ -58,8 +58,8 @@
 
     <div class='article'>
         <div class="content-title">
-            <a href="/Ingressのポータル情報をrubyで表示/統計してみる その1.html"><h1>Ingressのポータル情報をrubyで表示/統計してみる その1</h1></a>
-木 27 8月 2015
+            <a href="/sukuriputonomian-qiang-sono1-perlsmartcomments.html"><h1>スクリプトの勉強(その1) - perl(Smart::Comments)</h1></a>
+月 23 11月 2015
 
 by <a class="url fn" href="/author/torofield.html">torofield</a>
  
@@ -69,6 +69,455 @@ by <a class="url fn" href="/author/torofield.html">torofield</a>
         </div>
         
         <div><div class="section" id="id1">
+<h2>はじめに</h2>
+<p>最近、仕事で、いろいろスクリプト(perl/python/ruby)を使用しています。</p>
+<p>昔々からスクリプト自体の言語文法は知っていたものの、まともに使うのは、
+初めてなので、各スクリプトにふさわしい実装ができず、作業が遅いと感じてます。</p>
+<p>そのためには、とりあえず勉強、ということで、その勉強方法、および
+過程を書いてみようと思います。</p>
+<p>今回は、お仕事で主に使っているperlを題材にします。</p>
+</div>
+<div class="section" id="id2">
+<h2>勉強方法</h2>
+<p>なんかの言語を学ぶ場合は、以下の方法を試してみることにしてます。</p>
+<ol class="arabic">
+<li><dl class="first docutils">
+<dt>本を探す。</dt>
+<dd><p class="first last">言語文法を一通り理解するため。今回は、続・初めてのperl(電子書籍)
+を買いました。</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>既存のライブラリなどを修正してみる</dt>
+<dd><p class="first last">修正内容を検討する過程で、ライブラリの処理内容を見て、なるべく理解してみる。</p>
+</dd>
+</dl>
+</li>
+</ol>
+<p>今回は、既存のライブラリを修正してみようと思います。</p>
+<p>題材としてSmart::Commentsというライブラリにしました。</p>
+</div>
+<div class="section" id="smart-comments">
+<h2>Smart::Comments</h2>
+<p><a class="reference external" href="http://search.cpan.org/~neilb/Smart-Comments-1.06/lib/Smart/Comments.pm">Smart::Comments</a> とは、
+デバッグ用のコメント出力用のライブラリです。</p>
+<p>デバッグ用に、変数の内容をprint文出力するデバッグ(いわゆるprint文デバッグ)することは良くあります。</p>
+<p>そして、デバッグが終わった後、デバッグ文を消し忘れる、というのは良くあることです。
+しかも、デバック文自体再利用する羽目になることも時々あります。</p>
+<p>Smart::Commentsを利用すると、そこらへんがうまくいきます。
+以下のようなコードで、print文デバッグをすることができます。&quot;###&quot;というコメントに3つ連続(以上)記述すると開始します。</p>
+<pre class="literal-block">
+vi a.pl
+#!/usr/bin/perl
+
+use Smart::Comments;
+
+my $a=1;
+### $a
+</pre>
+<p>　　$ perl a.pl</p>
+<blockquote>
+### $a: 1</blockquote>
+<p>そして、デバッグ文を消したければ、use Smart::Commentsをコメントアウトすればデバック文は消えます。
+(もともと#はコメントですし)</p>
+<p>なお、使用方法としては、use Smart::Comments;とするのではなく、以下のように起動時に
+-MSmart::Commentsとする方法もあります。</p>
+<pre class="literal-block">
+perl -MSmart::Comments a.pl
+</pre>
+<p>いろいろ試した結果、自分的には、デバッグするときは、すぐに起動したいと思うようです。</p>
+<p>なので、ソースにuse Smart::Commentsを記述し、リリース時には</p>
+<pre class="literal-block">
+ag -f --perl | xargs perl -p -i -e's/^use Smart::Comments/#use Smart::Comments/g'
+</pre>
+<p>してSmart::Commentsをコメントアウトする方針にしています。</p>
+<p>なお余談ですが、agも便利なコマンドです。要するにgrepコマンドです。(説明は割愛)</p>
+</div>
+<div class="section" id="smart-comments-cpanm">
+<h2>修正前準備(Smart::Commentsのインストール(cpanm使用))</h2>
+<p>修正するライブラリをインストールする前に、cpanmをインストールします。
+プログラムひとつの、お手軽構成なので使用しています。</p>
+<p>インストールは以下の通りです。</p>
+<pre class="literal-block">
+curl -L http://cpanmin.us | perl - App::cpanminus
+</pre>
+<p>Smart::Commentsは、修正しやすいようにホームディレクトリにインストールします。</p>
+<pre class="literal-block">
+cpanm Smart::Comments -l ~/perl5
+</pre>
+<p>以下が実行時にローカルを見るよう、~/.bashrcに設定した環境変数です。</p>
+<pre class="literal-block">
+export PERL5LIB=&quot;/home/tanino/perl5/lib/perl5/x86_64-linux-gnu-thread-multi:/home/tanino/perl5/lib/perl5&quot;;
+export PATH=&quot;/home/tanino/perl5/bin:$PATH&quot;;
+</pre>
+</div>
+<div class="section" id="id4">
+<h2>Smart::Commentsへの追加仕様</h2>
+<p>勉強用の修正として、以下の仕様を追加します。</p>
+<pre class="literal-block">
+### &lt;trace&gt;
+### &lt;func&gt;
+</pre>
+<p>私は、デバッグをする際、処理の流れを見るため、関数名を出力することが良くあります。</p>
+<p>&lt;here&gt;などのログ出力場所(__FILE__,__LINE__)を出力する機能は既にありますが、関数名を出力する
+機能がありませんでしたので、追加しようと思います。</p>
+<p>&lt;trace&gt;は、3階層まで、呼び出し元を表示します。
+&lt;func&gt;は、呼び出している時点で処理している関数名を表示します。</p>
+</div>
+<div class="section" id="id5">
+<h2>Smart::Commentsの処理概要</h2>
+<p>追加するために、Smart::Commentsの処理を軽く見てみましょう。
+Smart::Commentsは、以下な感じで作られています。</p>
+<ol class="arabic">
+<li><dl class="first docutils">
+<dt>「ソースフィルタにより検索」</dt>
+<dd><p class="first last">ソースフィルタ(Filter::Simple)でソースを全検索。</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>「内部関数に置換」</dt>
+<dd><p class="first last">$intro(設定により異なるが、主に&quot;###&quot;という文字列)を検索し、Smart::Comments::_Dump等の内部関数に置換</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>「出力処理」</dt>
+<dd><p class="first last">置換した内部関数内でそれぞれの出力処理</p>
+</dd>
+</dl>
+</li>
+</ol>
+<p>上記理解のために、以下のようにデバッガで起動してみます。
+以下のように、a.plの6行目(&quot;### $a&quot;の部分)がSmart::Comments::_Dump関数に変更されていることがわかります。</p>
+<pre class="literal-block">
+$ perl -d a.pl
+
+Loading DB routines from perl5db.pl version 1.39_10
+Editor support available.
+
+Enter h or 'h h' for help, or 'man perldebug' for more help.
+
+main::(a.pl:5): my $a=1;
+  DB&lt;1&gt; c
+
+### $a: 1
+ at /home/tanino/perl5/lib/perl5/Smart/Comments.pm line 481.
+        Smart::Comments::_Dump('pref', '$a:', 'var', 'ARRAY(0x2521be8)') called at a.pl line 6
+main::(a.pl:8): my &#64;b=('aa','bb','cc');
+</pre>
+</div>
+<div class="section" id="id6">
+<h2>実装</h2>
+<p>処理概要を踏まえ、以下のように実装しました。</p>
+<p>修正は、以下の意図で修正しています。</p>
+<ol class="arabic simple">
+<li>「内部関数置換」部に&quot;### &lt;trace&gt;&quot;の置換を追加(130行目付近)</li>
+<li>「出力処理」部(_Dump)に&lt;trace&gt;用処理を追加(439行目付近)</li>
+</ol>
+<p>パッチは以下の通りです。</p>
+<pre class="literal-block">
+*** /home/tanino/perl5/lib/perl5/Smart/Comments.pm  2015-10-25 06:29:34.000000000 +0900
+--- Comments.pm     2015-11-23 11:17:52.068027644 +0900
+***************
+*** 18,23 ****
+--- 18,24 ----
+  my $average_over       = 5;   # Number of time-remaining estimates to average
+  my $minfillreps        = 2;   # Minimum size of a fill and fill cap indicator
+  my $forupdatequantum   = 0.01;  # Only update every 1% of elapsed distance
++ my $repeatcaller       = 4;
+
+  # Synonyms for asserts and requirements...
+  my $require = qr/require|ensure|assert|insist/;
+***************
+*** 129,134 ****
+--- 130,139 ----
+      s{ ^ $hws* $intro $hws* (.+ [.]{3}) $hws* $ }
+       {Smart::Comments::_Dump(pref=&gt;qq{$1});$DBX}gmx;
+
++     # Dump trace|func expression (the expression is not used as the label)...
++     s{ ^ $hws* $intro $hws* &lt;(trace|func)&gt; $optcolon $hws* $ }
++      {Smart::Comments::_DumpTrace(pref=&gt;q{$1:});$DBX}gmx;
++
+      # Dump an unlabelled expression (the expression is used as the label)...
+      s{ ^ $hws* $intro $hws* (.*) $optcolon $hws* $ }
+       {Smart::Comments::_Dump(pref=&gt;q{$1:},var=&gt;Smart::Comments::_quiet_eval(q{[$1]}));$DBX}gmx;
+***************
+*** 482,487 ****
+--- 487,516 ----
+      $prev_STDOUT = tell(*STDOUT);
+  }
+
++ #for trace/func
++ sub _DumpTrace {
++     my %args = &#64;_;
++     my ($pref) = &#64;args{qw(pref)};
++
++   my &#64;fc = ();
++     for ( my $i = 1 ; $i &lt; $repeatcaller ; $i++ ) {
++         my (undef, undef, undef, $func) = caller($i);
++         push(&#64;fc,$func) if defined $func;
++     }
++     my (undef, $file, $line) = caller;
++     my $f = $fc[0] // '';
++     my $t = &quot; trace:\n###   &quot; . join(&quot;\n###   &quot;,reverse(&#64;fc)) ;
++     $pref =~ s/(?:func)/&quot;$f&quot;, &quot;$file&quot;, line $line/g;
++     $pref =~ s/(?:trace)/$t &quot;$file&quot; , line $line/g;
++
++   $pref =~ s/:$//;
++     print STDERR &quot;\n&quot;;
++     warn &quot;### $pref\n&quot;;
++     $prev_STDOUT = tell(*STDOUT);
++     $prev_STDERR = tell(*STDERR);
++     return;
++ }
++
+  1; # Magic true value required at end of module
+  __END__
+</pre>
+</div>
+<div class="section" id="id7">
+<h2>動作確認</h2>
+<p>以下のコード(s.pl)で動作確認しました。</p>
+<pre class="literal-block">
+#!/usr/bin/perl
+
+package TEST;
+
+use strict;
+use warnings;
+
+use Smart::Comments;
+
+foo();
+
+sub foo {
+  bar();
+}
+
+sub bar {
+  baz();
+}
+
+sub baz {
+
+    ### &lt;trace&gt;
+    ### &lt;func&gt;
+}
+
+### &lt;trace&gt;
+### &lt;func&gt;
+</pre>
+<p>動作結果は以下の通りです。</p>
+<pre class="literal-block">
+$ perl s.pl
+
+###  trace:
+###   TEST::foo
+###   TEST::bar
+###   TEST::baz &quot;s.pl&quot; , line 22
+### &quot;TEST::baz&quot;, &quot;s.pl&quot;, line 23
+
+###  trace:
+###    &quot;s.pl&quot; , line 26
+### &quot;&quot;, &quot;s.pl&quot;, line 27
+</pre>
+</div>
+<div class="section" id="id8">
+<h2>まとめ</h2>
+<p>なんらかの目的で修正している方が、ただソースを眺めるよりは勉強になったような気がします。</p>
+<p>この「とりあえず修正してみる」方法の場合、あまりに難しい修正内容にすると、実装できず勉強にならない場合があるのですが
+今回は、あっさり実装できてよかったです。</p>
+<p>また、ネタを見つけたら書いてみたいと思います。</p>
+</div>
+</div>
+        <hr />
+    </div>
+		
+
+ 
+        
+
+ 
+
+    <div class='article'>
+        <a href="/sukuriputonoomian-qiang-sono2-wen-fa-chietsukuzheng-xing-tsuru-insutorumatome.html"><h2>スクリプトのお勉強 (その2) - 文法チェック整形 ツール　インストールまとめ</h2></a>
+        <div class= "well small"> 月 23 11月 2015
+
+by <a class="url fn" href="/author/torofield.html">torofield</a>
+ 
+
+
+ </div>
+        <div class="summary"><div class="section" id="id2">
+<h2>1.はじめに</h2>
+<p>最近、仕事で複数スクリプトを組み合わせてコーディングすることが多くなりました。
+それだと、各スクリプトの癖を忘れたり、そもそもどう書くのか忘れたりと、不良を作りこむ可能性が多くなります。</p>
+<p>しかも、実装する環境自体も、複数ホストを組み合わせる場合も多くなりました。
+その場合に、ホームディレクトリ以外にインストールできないホストで作業することも
+ありえます。</p>
+<p>また、インターネットに直接接続できないホストで作業することもあります。</p>
+<p>と考えると、以下の条件で、スクリプトの文法チェック(lint)/整形する環境を整える必要があると考えました。</p>
+<ul class="simple">
+<li>主に使用するスクリプト</li>
+</ul>
+<blockquote>
+<ul class="simple">
+<li>perl</li>
+<li>python</li>
+<li>javascript (今回は割愛)</li>
+<li>HTML (今回は割愛)</li>
+<li>ruby (今回は割愛)</li>
+</ul>
+</blockquote>
+<ul class="simple">
+<li>コマンドで起動する</li>
+</ul>
+<p>IDEを使う方式もありますが、今回はコマンドで起動する方式にします。</p>
+<ul class="simple">
+<li>外部ネットワークに接続する方式を避ける</li>
+</ul>
+<p>インターネットに直接接続できないホストで作業する場合もあるため。</p>
+<p>以降で各スクリプトのlint/整形ツールのインストール方法を書いていきます。</p>
+</div>
+<div class="section" id="perl">
+<h2>2.perl</h2>
+<div class="section" id="id3">
+<h3>環境構築</h3>
+<p>まず、外部ネットワークに接続できない場合でも、インストールできる環境を設定します。</p>
+<p>手始めに、cpanmコマンドをインストールします。export部分は.bashrcに入れてもよいです。</p>
+<pre class="literal-block">
+$ export PERL_LOCAL_LIB_ROOT=&quot;$HOME ...</pre></div></div> <a class="btn btn-info xsmall" href="/sukuriputonoomian-qiang-sono2-wen-fa-chietsukuzheng-xing-tsuru-insutorumatome.html">read more</a></div>
+    </div>	
+				
+
+ 
+        
+
+ 
+
+    <div class='article'>
+        <a href="/スクリプトごと 文法チェック/整形 ツール　インストールまとめ.html"><h2>スクリプトのお勉強 (その2) - 文法チェック/整形 ツール　インストールまとめ</h2></a>
+        <div class= "well small"> 月 23 11月 2015
+
+by <a class="url fn" href="/author/torofield.html">torofield</a>
+ 
+
+
+ </div>
+        <div class="summary"><div class="section" id="id2">
+<h2>1.はじめに</h2>
+<p>最近、仕事で複数スクリプトを組み合わせてコーディングすることが多くなりました。
+それだと、各スクリプトの癖を忘れたり、そもそもどう書くのか忘れたりと、不良を作りこむ可能性が多くなります。</p>
+<p>しかも、実装する環境自体も、複数ホストを組み合わせる場合も多くなりました。
+その場合に、ホームディレクトリ以外にインストールできないホストで作業することも
+ありえます。</p>
+<p>また、インターネットに直接接続できないホストで作業することもあります。</p>
+<p>と考えると、以下の条件で主に使用するスクリプトの文法チェック(lint)/整形する環境を整える必要があると考えました。</p>
+<ul class="simple">
+<li>主に使用するスクリプト</li>
+</ul>
+<blockquote>
+<ul class="simple">
+<li>perl</li>
+<li>python</li>
+<li>javascript (今回は割愛)</li>
+<li>HTML (今回は割愛)</li>
+<li>ruby (今回は割愛)</li>
+</ul>
+</blockquote>
+<ul class="simple">
+<li>コマンドで起動する</li>
+</ul>
+<p>IDEを使う方式もありますが、今回はコマンドで起動する方式にします。</p>
+<ul class="simple">
+<li>外部ネットワークに接続する方式を避ける</li>
+</ul>
+<p>インターネットに直接接続できないホストで作業する場合もあるため。</p>
+<p>以降で各スクリプトのlint/整形ツールのインストール方法を書いていきます。</p>
+</div>
+<div class="section" id="perl">
+<h2>2.perl</h2>
+<div class="section" id="id3">
+<h3>環境構築</h3>
+<p>まず、外部ネットワークに接続できない場合でも、インストールできる環境を設定します。</p>
+<p>手始めに、cpanmコマンドをインストールします。export部分は.bashrcに入れてもよいです。</p>
+<pre class="literal-block">
+$ export PERL_LOCAL_LIB_ROOT=&quot;$HOME/perl5 ...</pre></div></div> <a class="btn btn-info xsmall" href="/スクリプトごと 文法チェック/整形 ツール　インストールまとめ.html">read more</a></div>
+    </div>	
+				
+
+ 
+        
+
+ 
+
+    <div class='article'>
+        <a href="/icinga2 icinga web2 InfluxDB grafana.html"><h2>icinga2 + icinga web2 + InfluxDB + grafanaを使用したお手軽監視システム(その1)</h2></a>
+        <div class= "well small"> 月 23 11月 2015
+
+by <a class="url fn" href="/author/torofield.html">torofield</a>
+ 
+
+
+ </div>
+        <div class="summary"><div class="section" id="id1">
+<h2>1.はじめに</h2>
+<p>お仕事で監視ツールの調査をしていました。調べてみると、最近の監視システムは
+以下の感じのようです。</p>
+<ul class="simple">
+<li>旧来からある安定したツール(zabbix,nagios)</li>
+<li>Web UIが綺麗な先進的ツール(Munin,icinga2)</li>
+<li>次世代監視ツール (Sensu,Consul)</li>
+</ul>
+<p>今回は、次世代監視ツールも興味があるものの、より実践的なicinga2の動作確認をしたいと思います。</p>
+<p>目標として、お手軽に監視+可視化できる環境を整えることとします。</p>
+</div>
+<div class="section" id="id2">
+<h2>2.監視+可視化システム概要</h2>
+<p>監視+可視化システムは以下のように設定したいと思います。
+VMはすでにインストールしてあるものとします。</p>
+<pre class="literal-block">
+VM(ubuntu 14.04)
+ icinga2
+ icinga web2
+ grafina
+ docker
+   InfluxDB
+</pre>
+</div>
+<div class="section" id="id3">
+<h2>2.監視+可視化システムのインストール</h2>
+<p>インストールするツールは以下の通りです。</p>
+<ul class="simple">
+<li>監視ツール</li>
+<li>icinga2</li>
+<li>icinga web2</li>
+<li>可視化ツール</li>
+</ul>
+<blockquote>
+<ul class="simple">
+<li>docker</li>
+<li>InfluxDB(docker版 ...</li></ul></blockquote></div> <a class="btn btn-info xsmall" href="/icinga2 icinga web2 InfluxDB grafana.html">read more</a></div>
+    </div>	
+				
+
+ 
+        
+
+ 
+
+    <div class='article'>
+        <a href="/Ingressのポータル情報をrubyで表示/統計してみる その1.html"><h2>Ingressのポータル情報をrubyで表示/統計してみる その1</h2></a>
+        <div class= "well small"> 木 27 8月 2015
+
+by <a class="url fn" href="/author/torofield.html">torofield</a>
+ 
+
+
+ </div>
+        <div class="summary"><div class="section" id="id1">
 <h2>1.はじめに</h2>
 <p>2014年からIngressというゲームをしています。</p>
 <p>Ingressを続けている理由は、主に健康のため(のつもり)ですが、それだけでは、
@@ -95,221 +544,9 @@ by <a class="url fn" href="/author/torofield.html">torofield</a>
 <p>その1では「ポータル情報の取得」を記述し、その他はその2以降で記述したいと思います。</p>
 </div>
 <div class="section" id="id5">
-<h2>3.ポータル情報の取得</h2>
-<p>ポータル情報を取ってみたいと思いましたが、Ingressというゲームは、2015/08/23現在では、APIを公開していません。</p>
-<p>とりあえず、いろいろググったり、 <a class="reference external" href="https://www.ingress.com/intel">Ingress Intel Map</a> の通信内容を解析 <a class="footnote-reference" href="#id8" id="id6">[2]</a> したりしてみたところ、どうやら、「getPortalDetails」というのがIngressのポータル情報を取得するAPIのようでした。</p>
-<p>そこから逆算して、既存のライブラリ等を調査した結果、以下の方式でできるようです。 <a class="footnote-reference" href="#id9" id="id7">[3]</a></p>
-<ul class="simple">
-<li>ポータルlink URL取得</li>
-<li>rintelライブラリでポータル情報取得</li>
-</ul>
-<table class="docutils footnote" frame="void" id="id8" rules="none">
-<colgroup><col class="label" /><col /></colgroup>
-<tbody valign="top">
-<tr><td class="label"><a class="fn-backref" href="#id6">[2]</a></td><td>解析と言っても、ブラウザから使用できるツール(Firebug)等でURLを表示しただけで、システム開発で行う、一般的な解析のみ行っています。規約( <a class="reference external" href="https://www.ingress.com/terms">https://www.ingress.com/terms</a> や <a class="reference external" href="http://www.google.com/policies/privacy/">http://www.google.com/policies/privacy/</a> )からすると、通信内容の秘匿等を定めた特別な規約はなかったため、調査した結果を書いています。</td></tr>
-</tbody>
-</table>
-<table class="docutils footnote" frame="void" id="id9" rules="none">
-<colgroup><col class="label" /><col /></colgroup>
-<tbody valign="top">
-<tr><td class="label"><a class="fn-backref" href="#id7">[3]</a></td><td>規約( <a class="reference external" href="https://www.ingress.com/terms">https://www.ingress.com/terms</a> )にもありますが、将来にわたって保証されるわけではありません。本記事では現時点で可能な方法を書いています。ご注意ください。</td></tr>
-</tbody>
-</table>
-<div class="section" id="link-url">
-<h3>ポータルlink URL取得</h3>
-<p>「ポータルlink URL」とは、Ingressのポータル情報を表示する際のURLです。具体的には以下の操作で取得できます。</p>
-<ul class="simple">
-<li>1.https://www.ingress.com/intelにアクセスする</li>
-<li>2.自分がポータル情報を取得したい場所に移動する</li>
-<li>3.ポータルをクリックして詳細を表示する</li>
-<li>4.「link」ボタンを押下し、リンクをコピーする</li>
-</ul>
-<p>具体的な「ポータルlink URL」は以下のようになります。</p>
-<pre class="literal-block">
-https://www.ingress.com/intel?ll=35.476274,139.629552&amp;z=17&amp;pll=35.474809,139.625312
-</pre>
-</div>
-<div class="section" id="rintel">
-<h3>rintelライブラリでポータル情報取得</h3>
-<p>実際にポータル情報を取得するライブラリはrintel(<a class="reference external" href="https://github.com/sugyan/rintel">https://github.com/sugyan/rintel</a>)を使用しました。</p>
-<p>以下の感じでサンプルプログラムを作成しました。portal_info.rbファイルとして、対象のディレクトリに保存してください。</p>
-<p>といっても、examplesにあるportal_info.rbとの違いは、LOAD_PATHを付け加えたぐらいです。</p>
-<pre class="literal-block">
-#!/usr/bin/env ruby
-#
-# Usage:
-#   portal_info.rb PORTAL_LINK
-#
-# Example:
-#   portal_info.rb 'https://www.ingress.com/intel?ll=35.658581,139.745433&amp;z=19&amp;pll=35.658598,139.745458'
-#
-
-$LOAD_PATH.push('./rintel/lib')
-
-require 'rintel'
-require 'dotenv'
-require 'uri'
-require 'json'
-
-Dotenv.load
-client = Rintel::Client.new(
-  ENV['GOOGLE_USERNAME'],
-  ENV['GOOGLE_PASSWORD'],
-)
-
-portal_link = ARGV[0]
-
-qs = Hash[ URI::decode_www_form(URI::parse(portal_link).query) ]
-(lat, lng) = qs['pll'].split(',').map! {|d| d.to_f }
-target_tile_key = Rintel.tile_key(lat, lng, 18)
-
-entities = client.entities([target_tile_key])
-if ENV['DUMP']
-  puts JSON.pretty_generate(entities)
-end
-
-lati = lat.to_s.delete('.').to_i
-lngi = lng.to_s.delete('.').to_i
-guid = ''
-portal_info = []
-entities.each do |tile_key, data|
-  data['gameEntities'].each do |entity|
-    if entity[2][0] == 'p' &amp;&amp; entity[2][2] == lati &amp;&amp; entity[2][3] == lngi
-      guid = entity[0]
-      portal_info = client.portal_details(guid)
-      break
-    end
-  end
-end
-
-puts &lt;&lt;EOP
-name  : #{portal_info[8]}
-guid  : #{guid}
-belong: #{portal_info[1]}
-owner : #{portal_info[16]}
-resos : #{portal_info[15]}
-level : #{portal_info[4]}
-mods  :
-EOP
-portal_info[14].each_with_index do |mod, i|
-  if mod.nil?
-    puts &quot;  #{i}&quot;
-  else
-    puts &quot;  #{i} #{mod[1]} (#{mod[2]})&quot;
-  end
-end
-</pre>
-</div>
-<div class="section" id="id10">
-<h3>ポータル情報取得手順</h3>
-<p>実際のポータル情報手順は以下の通りです。以下ではrbenvを使用していますが、説明は割愛します。</p>
-<p>portal_info.rbの引数に、「ポータルlink URL」を設定してください。以下の例では、最寄り駅のURLを使用していますが、「ポータルlink URL」であれば、なんでも構いません。</p>
-<pre class="literal-block">
-$ mkdir ingress-portal-view ; cd ingress-portal-view
-$ rbenv local 2.2.2
-$ gem install mechanize
-$ gem install dotenv
-$ git clone https://github.com/sugyan/rintel ./rintel
-$ export GOOGLE_USERNAME=(グーグルのユーザ名)
-$ export GOOGLE_PASSWORD=(グーグルのパスワード)
-$ ./portal_info.rb 'https://www.ingress.com/intel?ll=35.476274,139.629552&amp;z=17&amp;pll=35.474809,139.625312'
-
-name  : 東急電鉄反町駅
-guid  : e62435c5c0aa48a6ad9f0f99b3a86660.16
-belong: R
-owner : tomofumi0003
-resos : [[&quot;tyowwwomawww&quot;, 6, 3827], [&quot;tyowwwomawww&quot;, 7, 4461], [&quot;isseiujiie&quot;, 8, 5838], [&quot;M6JP&quot;, 7, 4830], [&quot;isseiujiie&quot;, 7, 4841], [&quot;StillRockin&quot;, 7, 4833], [&quot;tyowwwomawww&quot;, 8, 5808], [&quot;tyowwwomawww&quot;, 6, 3814]]
-level : 7
-mods  :
-  0 Portal Shield (COMMON)
-  1 Portal Shield (COMMON)
-  2
-  3 Portal Shield (RARE)
-</pre>
-</div>
-</div>
-<div class="section" id="id11">
-<h2>4.動作原理、および苦労した点</h2>
-<div class="section" id="id12">
-<h3>動作原理について</h3>
-<p>portal_infoの動作は以下のようになっています。</p>
-<ul class="simple">
-<li>google(Ingress Intel Map)ログイン</li>
-<li>ポータルリンクURLから位置取得(tile_keyと緯度経度)</li>
-<li>tile_keyを引数にgetEntities呼び出し(Entity取得)</li>
-<li>Entityと緯度経度からGUIDを取得</li>
-<li>GUIDからgetPortalDetailsを使用し、ポータル情報取得</li>
-</ul>
-<p>Ingressはgoogleの一部(最近独立しましたが)ですので、googleにログインが必須です。</p>
-<p>getEntitiesとは、Ingress Intel Mapが表示している地図に存在するアイテム(ポータル,リンク等を含む、地図に表示する全部)を取得するAPIのようです。</p>
-<p>「tile_key」とは、表示している地図上の範囲を、なんらかの計算にて取得するための情報のようです。</p>
-<p>そして、getEntitiesで取得した値と、緯度経度を比較して、同一の位置なEntityを取り出します。</p>
-<p>取り出したEntityから、実際のポータル情報の元となるGUIDを取得後、getPortalDetailsを呼び出して具体的な値を取得するようです。</p>
-</div>
-<div class="section" id="id13">
-<h3>苦労した点</h3>
-<p>なかなかに苦労した点は以下でした。</p>
-<ul class="simple">
-<li>どこから手を付けていいか不明</li>
-<li>rintelに付属しているサンプルが当初は動作しなかった</li>
-</ul>
-<blockquote>
-<ul class="simple">
-<li>googleにログインできない</li>
-<li>tile_keyの計算が失敗してる</li>
-</ul>
-</blockquote>
-</div>
-<div class="section" id="id14">
-<h3>どこから手を付けていいか不明</h3>
-<p>まずは、どこから手を付けていいかを考えていました。</p>
-<p>どうやら「getPortalDetails」という関数を使うらしいということが分かってからは、案外簡単に行きました。</p>
-</div>
-<div class="section" id="google">
-<h3>googleにログインできない</h3>
-<p>rintelというライブラリを調べて、サンプルプログラムを動作させるのが苦労しました。
-そもそもIngressはAPIを公開していないため、プログラムを作成した時点の動作に合わせざるを得ず、時間が経過すると動作しなくなるのはしょうがないところです。</p>
-<p>サンプル(portal_info.rb)を起動したところ、いきなり起動に失敗しました。起動できない理由は、そもそも、googleにログインできていないようだと、あたりを付けて調査した結果、やっと理由が分かりました。</p>
-<p>googleにログインする際のHTML(一部)は以下なのですが、formのaction(<strong>AccountLoginInfo</strong>)と実際にログインするURL(<strong>ServiceLoginAuth</strong>)が違うためにログインできなかったようです。</p>
-<pre class="literal-block">
-&lt;form novalidate method=&quot;post&quot; action=&quot;https://accounts.google.com/AccountLoginInfo&quot; id=&quot;gaia_loginform&quot;&gt;
-
- &lt;script&gt;
-  passwordSeparationPage = new gaia.pages.PasswordSeparationPage(
-  0
-  , 'https://accounts.google.com/ServiceLoginAuth');
-  &lt;/script&gt;
-</pre>
-<p>このようになってる理由は、CSRF対策だと思いますが、実際のHTMLを見るまでログインできない理由が理解できず、苦労しました。</p>
-</div>
-<div class="section" id="tile-key">
-<h3>tile_keyの計算が不正</h3>
-<p>もう一つは、tile_keyの計算が不正だったことです。</p>
-<p>tile_keyの計算がIngress Intel Mapと異なること自体、理解するのに苦労しました。
-結局Ingress Intel MapでのHTTP通信結果から逆算して理解しました。</p>
-<p>こればかりは、計算方式が分からないとどうしようもありません。</p>
-<p>ググってみると、getEntitiesAPIを解析した人がいるようで、その人 <a class="footnote-reference" href="#id16" id="id15">[4]</a> が使用している値を使用するとうまくいきました。</p>
-<table class="docutils footnote" frame="void" id="id16" rules="none">
-<colgroup><col class="label" /><col /></colgroup>
-<tbody valign="top">
-<tr><td class="label"><a class="fn-backref" href="#id15">[4]</a></td><td><a class="reference external" href="http://blog.csdn.net/feng______/article/details/46697497">http://blog.csdn.net/feng______/article/details/46697497</a></td></tr>
-</tbody>
-</table>
-</div>
-<div class="section" id="pull-requestmerge">
-<h3>修正はPull Request後にmerge済み</h3>
-<p>修正内容は、Pull Requestを出したら、ほぼすぐにmergeされ、パッチとして取り込まれています。</p>
-</div>
-</div>
-<div class="section" id="id17">
-<h2>5.終わりに</h2>
-<p>手を付けた時は、もっとかかるかと思いましたが、意外と早くできました。</p>
-<p>次は、情報をDB等に格納し、統計表示するまでしていきたいと思います。</p>
-</div>
-</div>
-        <hr />
-    </div>
-		
+<h2>3 ...</h2></div> <a class="btn btn-info xsmall" href="/Ingressのポータル情報をrubyで表示/統計してみる その1.html">read more</a></div>
+    </div>	
+				
 
  
         
@@ -408,62 +645,6 @@ $ curl -L http://toolbelt.treasuredata.com/sh/install-ubuntu-trusty-td-agent2.sh
 $ /usr/sbin/td-agent-gem install fluent-plugin-elasticsearch fluent-plugin-dstat ...</pre></div></div> <a class="btn btn-info xsmall" href="/kibana4 elasticsearch fluentd dstat ruby td-agent.html">read more</a></div>
     </div>	
 				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="/スクリプトごと 文法チェック/整形 ツール　インストールまとめ.html"><h2>スクリプトごと 文法チェック/整形 ツール　インストールまとめ</h2></a>
-        <div class= "well small"> 日 15 3月 2015
-
-by <a class="url fn" href="/author/torofield.html">torofield</a>
- 
-
-
- </div>
-        <div class="summary"><div class="section" id="id2">
-<h2>1.はじめに</h2>
-<p>最近、仕事で複数スクリプトを組み合わせてコーディングすることが多くなりました。
-それだと、各スクリプトの癖を忘れたり、そもそもどう書くのか忘れたりと、不良を作りこむ可能性が多くなります。</p>
-<p>しかも、実装する環境自体も、複数ホストを組み合わせる場合も多くなりました。
-その場合に、ホームディレクトリ以外にインストールできないホストで作業することも
-ありえます。</p>
-<p>また、インターネットに直接接続できないホストで作業することもあります。</p>
-<p>と考えると、以下の条件で主に使用するスクリプトの文法チェック(lint)/整形する環境を整える必要があると考えました。</p>
-<ul class="simple">
-<li>主に使用するスクリプト</li>
-</ul>
-<blockquote>
-<ul class="simple">
-<li>perl</li>
-<li>python</li>
-<li>javascript</li>
-<li>HTML</li>
-<li>ruby (今回は割愛)</li>
-</ul>
-</blockquote>
-<ul class="simple">
-<li>コマンドで起動する</li>
-</ul>
-<p>IDEを使う方式もありますが、今回はコマンドで起動する方式のみにします。</p>
-<ul class="simple">
-<li>外部ネットワークに接続する方式を避ける</li>
-</ul>
-<p>以降で各スクリプトのlint/整形ツールのインストール方法を書いていきます。</p>
-</div>
-<div class="section" id="perl">
-<h2>2.perl</h2>
-<div class="section" id="id3">
-<h3>環境構築</h3>
-<p>まず、外部ネットワークに接続できない場合でも、インストールできる環境を設定します。</p>
-<p>手始めに、cpanmコマンドをインストールします。export部分は.bashrcに入れてもよいです。</p>
-<pre class="literal-block">
-$ export PERL_LOCAL_LIB_ROOT=&quot;$HOME/perl5&quot;;
-$ export PERL5LIB=&quot;$HOME ...</pre></div></div> <a class="btn btn-info xsmall" href="/スクリプトごと 文法チェック/整形 ツール　インストールまとめ.html">read more</a></div>
-    </div>	
-				
 <div class="pagination">
 <ul>
     <li class="prev disabled"><a href="#">&larr; Previous</a></li>
@@ -503,7 +684,7 @@ $ export PERL5LIB=&quot;$HOME ...</pre></div></div> <a class="btn btn-info xsmal
                 </li>
                 
                 <li><a href="/category/monitoring-dataanalysys.html">monitoring dataanalysys</a></li>
-                <li><a href="/category/pelican-python-perl-javascript.html">Pelican python perl javascript</a></li>
+                <li><a href="/category/python-perl-javascript.html">python perl javascript</a></li>
                 <li><a href="/category/ruby-ingress.html">ruby ingress</a></li>
                 <li><a href="/category/ruby-kibana-elasticsearch-dataanalysys.html">ruby kibana elasticsearch dataanalysys</a></li>
                    
