@@ -162,6 +162,24 @@ app/assets/javascripts/components (vueコンポーネント 今回は不使用)
 <div class="section" id="rails-route">
 <h3>railsコントローラ/ビュー/route作成</h3>
 <p>railsのコントローラを作成し、railsのビューを定義します。</p>
+<p>Vueに関連する主な部分は以下の通りです。</p>
+<ul class="simple">
+<li>「v-model=&quot;newTodo」「v-for=&quot;todo in todos&quot;」がデータバインディング。</li>
+</ul>
+<blockquote>
+<ul class="simple">
+<li>「newTodo」を操作するだけで、画面上のinput表示が変更される</li>
+<li>「todos」を操作すると、画面上のリスト表示が変更される</li>
+</ul>
+</blockquote>
+<ul class="simple">
+<li>「v-on」がイベント受信。</li>
+</ul>
+<blockquote>
+<ul class="simple">
+<li>enterや、クリックすることでVueモデルの処理に移行する</li>
+</ul>
+</blockquote>
 <pre class="literal-block">
 $ bundle exec rails g controller todoapp
 $ vi app/views/todoapp/index.html.erb
@@ -206,6 +224,7 @@ $ -&gt;
         this.todos.splice(index, 1)
   )
 </pre>
+<p>ほぼ見ての通りですが、一つだけ注意する必要があるのは、todosが配列で定義されているため、push/spliceを使う必要がある点です(時々、はまったりします)直接配列に代入すると画面が変更されません。</p>
 </div>
 <div class="section" id="rails">
 <h3>rails起動</h3>
