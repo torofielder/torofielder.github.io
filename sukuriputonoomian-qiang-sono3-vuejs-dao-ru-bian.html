@@ -148,6 +148,7 @@ gem 'pry-rails', group: :development
 </div>
 <div class="section" id="vue-todo">
 <h2>3.Vueサンプル(TODO)の作成</h2>
+<p>上記で、rails上にてVue.jsを書ける環境が整ったので、サンプルを作成してみます。</p>
 <div class="section" id="id6">
 <h3>サンプル作成</h3>
 <p>ディレクトリ構成は以下の感じです。</p>
@@ -157,6 +158,9 @@ app/assets/javascripts/components (vueコンポーネント 今回は不使用)
    controller/todoapp/            (todoサンプルコントローラ(自動生成))
    views/todoapp/                 (todoサンプル view)
 </pre>
+</div>
+<div class="section" id="rails-route">
+<h3>railsコントローラ/ビュー/route作成</h3>
 <p>railsのコントローラを作成し、railsのビューを定義します。</p>
 <pre class="literal-block">
 $ bundle exec rails g controller todoapp
@@ -175,6 +179,13 @@ $ vi app/views/todoapp/index.html.erb
 
 &lt;/body&gt;
 </pre>
+<p>ブラウザからアクセスするためのconfig/route.rbに以下を追記します。</p>
+<pre class="literal-block">
+get 'todoapp' =&gt; 'todoapp#index'
+</pre>
+</div>
+<div class="section" id="vue">
+<h3>Vueのモデル作成</h3>
 <p>vueのモデル部分(app/assets/javascripts/models/todo.js.coffee)は以下にしています。</p>
 <pre class="literal-block">
 $ -&gt;
@@ -195,10 +206,9 @@ $ -&gt;
         this.todos.splice(index, 1)
   )
 </pre>
-<p>config/route.rbに以下を追記します。</p>
-<pre class="literal-block">
-get 'todoapp' =&gt; 'todoapp#index'
-</pre>
+</div>
+<div class="section" id="rails">
+<h3>rails起動</h3>
 <p>以下で起動します。</p>
 <pre class="literal-block">
 $ bundle exec rails s -b 0.0.0.0 -p 30000
