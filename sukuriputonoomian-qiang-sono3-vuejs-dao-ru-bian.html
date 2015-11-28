@@ -114,21 +114,21 @@ by <a class="url fn" href="/author/torofield.html">torofield</a>
 <h3>環境構築</h3>
 <p>まずはrailsをインストールします。</p>
 <pre class="literal-block">
-    $ mkdir rails; cd rails
-    $ rbenv global 2.1.6
-    $ rbenv rehash
-    $ gem install bundler
-    $ bundle init
-    ### Gemfileの編集(rails追加)
-    $ vi Gemfile
+$ mkdir rails; cd rails
+$ rbenv global 2.1.6
+$ rbenv rehash
+$ gem install bundler
+$ bundle init
+### Gemfileの編集(rails追加)
+$ vi Gemfile
 gem 'rails'
-    $ bundle install --path=vendor/bundle
-    $ bundle exec rails new vuesample --skip-bundle -T
-    create
-    create  README.rdoc
-    create  Rakefile
-    ...
-    $ cd vuesample
+$ bundle install --path=vendor/bundle
+$ bundle exec rails new vuesample --skip-bundle -T
+create
+create  README.rdoc
+create  Rakefile
+...
+$ cd vuesample
 </pre>
 <p>Rails上でVueを使用できるように設定します。Gemfileに以下を追記します。</p>
 <pre class="literal-block">
@@ -141,10 +141,9 @@ gem 'binding_of_caller', group: :development
 gem 'pry-rails', group: :development
 </pre>
 <p>app/assets/javascripts/application.jsに下記を追記します。</p>
-<dl class="docutils">
-<dt>::</dt>
-<dd>//= require vue</dd>
-</dl>
+<pre class="literal-block">
+//= require vue
+</pre>
 </div>
 </div>
 <div class="section" id="vue-todo">
@@ -158,6 +157,7 @@ app/assets/javascripts/components (vueコンポーネント 今回は不使用)
    controller/todoapp/            (todoサンプルコントローラ(自動生成))
    views/todoapp/                 (todoサンプル view)
 </pre>
+<p>railsのコントローラを作成し、railsのビューを定義します。</p>
 <pre class="literal-block">
 $ bundle exec rails g controller todoapp
 $ vi app/views/todoapp/index.html.erb
