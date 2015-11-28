@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="utf-8">
+    <title>torofielder blog</title>
+    <meta name="description" content="">
+    <meta name="author" content="torofield">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
+    <!--[if lt IE 9]>
+    <script src="/theme/html5.js"></script>
+    <![endif]-->
+
+    <!-- Le styles -->
+    <link href="/theme/bootstrap.min.css" rel="stylesheet">
+    <link href="/theme/bootstrap.min.responsive.css" rel="stylesheet">
+    <link href="/theme/local.css" rel="stylesheet">
+    <link href="/theme/pygments.css" rel="stylesheet">
+
+    <!-- So Firefox can bookmark->"abo this site" -->
+
+</head>
+
+<body>
+
+<div class="navbar">
+    <div class="navbar-inner">
+    <div class="container">
+
+         <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+             <span class="icon-bar"></span>
+             <span class="icon-bar"></span>
+             <span class="icon-bar"></span>
+         </a>
+
+        <a class="brand" href="">torofielder blog</a>
+
+        <div class="nav-collapse">
+        <ul class="nav">
+            
+        </ul>
+        </div>
+        
+    </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="content">
+    <div class="row">
+
+        <div class="span9">
+        
+
+        
+
+
+    <div class='article'>
+        <div class="content-title">
+            <a href="/sukuriputonoomian-qiang-sono3-vuejs-dao-ru-bian.html"><h1>スクリプトのお勉強 (その3) - Vue.js 導入編</h1></a>
+土 28 11月 2015
+
+by <a class="url fn" href="/author/torofield.html">torofield</a>
+ 
+
+
+ 
+        </div>
+        
+        <div><div class="section" id="id1">
+<h2>1.はじめに</h2>
+<p>近年、web関係で「クライアントサイドJavaScript」というのがトレンドになっているそうです。</p>
+<p>「クライアントサイドJavaScript」と、従来のWebアプリケーションとの違いは、ブラウザ側での動作が中心となることです。</p>
+<p>従来のWebアプリケーションでは、Webサーバでの処理が中心でしたが、「クライアントサイドJavaScript」では、ブラウザ側での処理が中心となってきて、かつ、ユーザの使い勝手の良さが重要になってきます。</p>
+<p>仕事でちょうど簡単なweb画面を1からつくる機会があり、クライアントサイドJavaScriptを使うことにしました。</p>
+<p>現在使われているクライアントサイドJavaScriptは以下のようなものがあります。</p>
+<ul class="simple">
+<li>AngularJS</li>
+<li>Knockout.js</li>
+<li>React.js</li>
+<li>Vue.js</li>
+</ul>
+<p>この中でも一番簡単そうなVue.jsを使用してみました。</p>
+<div class="section" id="id2">
+<h3>Vue.jsとは</h3>
+<p>Vue.jsとは、以下のようなJavaScript用ライブラリです。</p>
+<ul class="simple">
+<li>View のみ</li>
+<li>リアクティブデータバインディング</li>
+</ul>
+<blockquote>
+<ul class="simple">
+<li>HTMLの各タグとデータを自動的に結び付ける</li>
+</ul>
+</blockquote>
+<ul class="simple">
+<li>コンポーネントベース</li>
+<li>簡単なAPI</li>
+</ul>
+<p>お手軽ライブラリのようなので、入門的に導入してみました。</p>
+</div>
+</div>
+<div class="section" id="id3">
+<h2>2.Vue.jsの導入</h2>
+<p>まず、Vue.jsを試す環境を導入してみます。スクリプトの勉強にもなるため、Ruby on Rails上で動作させてみます。</p>
+<p>以下を参考にしました。</p>
+<p><a class="reference external" href="http://qiita.com/hkusu/items/64cfd8bf4b4c8391e454">http://qiita.com/hkusu/items/64cfd8bf4b4c8391e454</a></p>
+<div class="section" id="id4">
+<h3>前提</h3>
+<ul class="simple">
+<li>OS: Ubuntu 14.04</li>
+<li>Ruby：2.1.6</li>
+<li>Rails：4.2.5 (インストールした時点の最新)</li>
+<li>Vue.js 1.0.10(Rails Assets経由)</li>
+<li>rbenv使用</li>
+</ul>
+</div>
+<div class="section" id="id5">
+<h3>環境構築</h3>
+<p>まずはrailsをインストールします。</p>
+<pre class="literal-block">
+    $ mkdir rails; cd rails
+    $ rbenv global 2.1.6
+    $ rbenv rehash
+    $ gem install bundler
+    $ bundle init
+    ### Gemfileの編集(rails追加)
+    $ vi Gemfile
+gem 'rails'
+    $ bundle install --path=vendor/bundle
+    $ bundle exec rails new vuesample --skip-bundle -T
+    create
+    create  README.rdoc
+    create  Rakefile
+    ...
+    $ cd vuesample
+</pre>
+<p>Rails上でVueを使用できるように設定します。Gemfileに以下を追記します。</p>
+<pre class="literal-block">
+source 'https://rails-assets.org' do
+  gem 'rails-assets-vue'
+end
+gem 'therubyracer', platforms: :ruby
+gem 'better_errors', group: :development
+gem 'binding_of_caller', group: :development
+gem 'pry-rails', group: :development
+</pre>
+<p>app/assets/javascripts/application.jsに下記を追記します。</p>
+<dl class="docutils">
+<dt>::</dt>
+<dd>//= require vue</dd>
+</dl>
+</div>
+</div>
+<div class="section" id="vue-todo">
+<h2>3.Vueサンプル(TODO)の作成</h2>
+<div class="section" id="id6">
+<h3>サンプル作成</h3>
+<p>ディレクトリ構成は以下の感じです。</p>
+<pre class="literal-block">
+app/assets/javascripts/components (vueコンポーネント 今回は不使用)
+                      /models     (vueモデル)
+   controller/todoapp/            (todoサンプルコントローラ(自動生成))
+   views/todoapp/                 (todoサンプル view)
+</pre>
+<pre class="literal-block">
+$ bundle exec rails g controller todoapp
+$ vi app/views/todoapp/index.html.erb
+&lt;body&gt;
+
+&lt;div id=&quot;todoapp&quot;&gt;
+  &lt;input v-model=&quot;newTodo&quot; v-on:keyup.enter=&quot;addTodo&quot;&gt;
+  &lt;ul&gt;
+    &lt;li v-for=&quot;todo in todos&quot;&gt;
+      &lt;span&gt;{{ todo.text }}&lt;/span&gt;
+      &lt;button v-on:click=&quot;removeTodo($index)&quot;&gt;X&lt;/button&gt;
+    &lt;/li&gt;
+  &lt;/ul&gt;
+&lt;/div&gt;
+
+&lt;/body&gt;
+</pre>
+<p>vueのモデル部分(app/assets/javascripts/models/todo.js.coffee)は以下にしています。</p>
+<pre class="literal-block">
+$ -&gt;
+  new Vue(
+    el: '#todoapp',
+    data:
+      newTodo: '',
+      todos: [
+        { text: 'TODOを追加してください' }
+      ]
+    methods:
+      addTodo: () -&gt;
+        text = this.newTodo.trim()
+        if (text)
+          this.todos.push({ text: text })
+          this.newTodo = ''
+      removeTodo: (index) -&gt;
+        this.todos.splice(index, 1)
+  )
+</pre>
+<p>config/route.rbに以下を追記します。</p>
+<pre class="literal-block">
+get 'todoapp' =&gt; 'todoapp#index'
+</pre>
+<p>以下で起動します。</p>
+<pre class="literal-block">
+$ bundle exec rails s -b 0.0.0.0 -p 30000
+=&gt; Booting WEBrick
+=&gt; Rails 4.2.5 application starting in development on http://0.0.0.0:30000
+=&gt; Run `rails server -h` for more startup options
+=&gt; Ctrl-C to shutdown server
+[2015-11-28 16:02:48] INFO  WEBrick 1.3.1
+[2015-11-28 16:02:48] INFO  ruby 2.1.6 (2015-04-13) [x86_64-linux]
+[2015-11-28 16:02:48] INFO  WEBrick::HTTPServer#start: pid=16997 port=30000
+</pre>
+<p>そして、以下にアクセスすると、簡易TODOアプリにアクセスできます。</p>
+<p><a class="reference external" href="http://192.168.0.10:30000/todoapp">http://192.168.0.10:30000/todoapp</a></p>
+</div>
+</div>
+<div class="section" id="id7">
+<h2>4.おわりに</h2>
+<p>導入は、あっさり終わりました。</p>
+<p>次はもう少し実用的な内容として、タブコンポーネントを実装しようと思います。</p>
+</div>
+</div>
+        <hr />
+    </div>
+		
+<div class="pagination">
+<ul>
+    <li class="prev disabled"><a href="#">&larr; Previous</a></li>
+
+    <li class="active"><a href="/category/javascript-vuejs-clientjavascript.html">1</a></li>
+
+    <li class="next disabled"><a href="#">&rarr; Next</a></li>
+
+</ul>
+</div>
+ 
+  
+        </div>
+        
+        <div class="span3">
+
+            <div class="well" style="padding: 8px 0; background-color: #FBFBFB;">
+            <ul class="nav nav-list">
+                <li class="nav-header"> 
+                Site
+                </li>
+            
+                <li><a href="/archives.html">Archives</a>
+                <li><a href="/tags.html">Tags</a>
+
+
+
+
+            </ul>
+            </div>
+
+
+            <div class="well" style="padding: 8px 0; background-color: #FBFBFB;">
+            <ul class="nav nav-list">
+                <li class="nav-header"> 
+                Categories
+                </li>
+                
+                <li><a href="/category/javascript-vuejs-clientjavascript.html">javascript vuejs clientjavascript</a></li>
+                <li><a href="/category/mojolicious-xml-rpc-plugin.html">Mojolicious XML-RPC Plugin</a></li>
+                <li><a href="/category/monitoring-dataanalysys.html">monitoring dataanalysys</a></li>
+                <li><a href="/category/python-perl-javascript.html">python perl javascript</a></li>
+                <li><a href="/category/ruby-ingress.html">ruby ingress</a></li>
+                <li><a href="/category/ruby-kibana-elasticsearch-dataanalysys.html">ruby kibana elasticsearch dataanalysys</a></li>
+                   
+            </ul>
+            </div>
+
+
+            <div class="well" style="padding: 8px 0; background-color: #FBFBFB;">
+            <ul class="nav nav-list">
+                <li class="nav-header"> 
+                Links
+                </li>
+            
+                <li><a href="http://getpelican.com/">Pelican</a></li>
+                <li><a href="http://python.org/">Python.org</a></li>
+                <li><a href="http://jinja.pocoo.org/">Jinja2</a></li>
+                <li><a href="#">You can modify those links in your config file</a></li>
+            </ul>
+            </div>
+
+
+            <div class="social">
+            <div class="well" style="padding: 8px 0; background-color: #FBFBFB;">
+            <ul class="nav nav-list">
+                <li class="nav-header"> 
+                Social
+                </li>
+           
+                <li><a href="#">You can add links in your config file</a></li>
+                <li><a href="#">Another social link</a></li>
+            </ul>
+            </div>
+            </div>
+
+        </div>  
+    </div>     </div> 
+<footer>
+<br />
+<p><a href="">torofielder blog</a> &copy; torofield 2015</p>
+</footer>
+
+</div> <!-- /container -->
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+<script src="/theme/bootstrap-collapse.js"></script>
+ 
+</body>
+</html>

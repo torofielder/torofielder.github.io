@@ -58,8 +58,8 @@
 
     <div class='article'>
         <div class="content-title">
-            <a href="/sukuriputonomian-qiang-sono1-perlsmartcomments.html"><h1>スクリプトの勉強(その1) - perl(Smart::Comments)</h1></a>
-月 23 11月 2015
+            <a href="/sukuriputonoomian-qiang-sono3-vuejs-dao-ru-bian.html"><h1>スクリプトのお勉強 (その3) - Vue.js 導入編</h1></a>
+土 28 11月 2015
 
 by <a class="url fn" href="/author/torofield.html">torofield</a>
  
@@ -69,6 +69,182 @@ by <a class="url fn" href="/author/torofield.html">torofield</a>
         </div>
         
         <div><div class="section" id="id1">
+<h2>1.はじめに</h2>
+<p>近年、web関係で「クライアントサイドJavaScript」というのがトレンドになっているそうです。</p>
+<p>「クライアントサイドJavaScript」と、従来のWebアプリケーションとの違いは、ブラウザ側での動作が中心となることです。</p>
+<p>従来のWebアプリケーションでは、Webサーバでの処理が中心でしたが、「クライアントサイドJavaScript」では、ブラウザ側での処理が中心となってきて、かつ、ユーザの使い勝手の良さが重要になってきます。</p>
+<p>仕事でちょうど簡単なweb画面を1からつくる機会があり、クライアントサイドJavaScriptを使うことにしました。</p>
+<p>現在使われているクライアントサイドJavaScriptは以下のようなものがあります。</p>
+<ul class="simple">
+<li>AngularJS</li>
+<li>Knockout.js</li>
+<li>React.js</li>
+<li>Vue.js</li>
+</ul>
+<p>この中でも一番簡単そうなVue.jsを使用してみました。</p>
+<div class="section" id="id2">
+<h3>Vue.jsとは</h3>
+<p>Vue.jsとは、以下のようなJavaScript用ライブラリです。</p>
+<ul class="simple">
+<li>View のみ</li>
+<li>リアクティブデータバインディング</li>
+</ul>
+<blockquote>
+<ul class="simple">
+<li>HTMLの各タグとデータを自動的に結び付ける</li>
+</ul>
+</blockquote>
+<ul class="simple">
+<li>コンポーネントベース</li>
+<li>簡単なAPI</li>
+</ul>
+<p>お手軽ライブラリのようなので、入門的に導入してみました。</p>
+</div>
+</div>
+<div class="section" id="id3">
+<h2>2.Vue.jsの導入</h2>
+<p>まず、Vue.jsを試す環境を導入してみます。スクリプトの勉強にもなるため、Ruby on Rails上で動作させてみます。</p>
+<p>以下を参考にしました。</p>
+<p><a class="reference external" href="http://qiita.com/hkusu/items/64cfd8bf4b4c8391e454">http://qiita.com/hkusu/items/64cfd8bf4b4c8391e454</a></p>
+<div class="section" id="id4">
+<h3>前提</h3>
+<ul class="simple">
+<li>OS: Ubuntu 14.04</li>
+<li>Ruby：2.1.6</li>
+<li>Rails：4.2.5 (インストールした時点の最新)</li>
+<li>Vue.js 1.0.10(Rails Assets経由)</li>
+<li>rbenv使用</li>
+</ul>
+</div>
+<div class="section" id="id5">
+<h3>環境構築</h3>
+<p>まずはrailsをインストールします。</p>
+<pre class="literal-block">
+    $ mkdir rails; cd rails
+    $ rbenv global 2.1.6
+    $ rbenv rehash
+    $ gem install bundler
+    $ bundle init
+    ### Gemfileの編集(rails追加)
+    $ vi Gemfile
+gem 'rails'
+    $ bundle install --path=vendor/bundle
+    $ bundle exec rails new vuesample --skip-bundle -T
+    create
+    create  README.rdoc
+    create  Rakefile
+    ...
+    $ cd vuesample
+</pre>
+<p>Rails上でVueを使用できるように設定します。Gemfileに以下を追記します。</p>
+<pre class="literal-block">
+source 'https://rails-assets.org' do
+  gem 'rails-assets-vue'
+end
+gem 'therubyracer', platforms: :ruby
+gem 'better_errors', group: :development
+gem 'binding_of_caller', group: :development
+gem 'pry-rails', group: :development
+</pre>
+<p>app/assets/javascripts/application.jsに下記を追記します。</p>
+<dl class="docutils">
+<dt>::</dt>
+<dd>//= require vue</dd>
+</dl>
+</div>
+</div>
+<div class="section" id="vue-todo">
+<h2>3.Vueサンプル(TODO)の作成</h2>
+<div class="section" id="id6">
+<h3>サンプル作成</h3>
+<p>ディレクトリ構成は以下の感じです。</p>
+<pre class="literal-block">
+app/assets/javascripts/components (vueコンポーネント 今回は不使用)
+                      /models     (vueモデル)
+   controller/todoapp/            (todoサンプルコントローラ(自動生成))
+   views/todoapp/                 (todoサンプル view)
+</pre>
+<pre class="literal-block">
+$ bundle exec rails g controller todoapp
+$ vi app/views/todoapp/index.html.erb
+&lt;body&gt;
+
+&lt;div id=&quot;todoapp&quot;&gt;
+  &lt;input v-model=&quot;newTodo&quot; v-on:keyup.enter=&quot;addTodo&quot;&gt;
+  &lt;ul&gt;
+    &lt;li v-for=&quot;todo in todos&quot;&gt;
+      &lt;span&gt;{{ todo.text }}&lt;/span&gt;
+      &lt;button v-on:click=&quot;removeTodo($index)&quot;&gt;X&lt;/button&gt;
+    &lt;/li&gt;
+  &lt;/ul&gt;
+&lt;/div&gt;
+
+&lt;/body&gt;
+</pre>
+<p>vueのモデル部分(app/assets/javascripts/models/todo.js.coffee)は以下にしています。</p>
+<pre class="literal-block">
+$ -&gt;
+  new Vue(
+    el: '#todoapp',
+    data:
+      newTodo: '',
+      todos: [
+        { text: 'TODOを追加してください' }
+      ]
+    methods:
+      addTodo: () -&gt;
+        text = this.newTodo.trim()
+        if (text)
+          this.todos.push({ text: text })
+          this.newTodo = ''
+      removeTodo: (index) -&gt;
+        this.todos.splice(index, 1)
+  )
+</pre>
+<p>config/route.rbに以下を追記します。</p>
+<pre class="literal-block">
+get 'todoapp' =&gt; 'todoapp#index'
+</pre>
+<p>以下で起動します。</p>
+<pre class="literal-block">
+$ bundle exec rails s -b 0.0.0.0 -p 30000
+=&gt; Booting WEBrick
+=&gt; Rails 4.2.5 application starting in development on http://0.0.0.0:30000
+=&gt; Run `rails server -h` for more startup options
+=&gt; Ctrl-C to shutdown server
+[2015-11-28 16:02:48] INFO  WEBrick 1.3.1
+[2015-11-28 16:02:48] INFO  ruby 2.1.6 (2015-04-13) [x86_64-linux]
+[2015-11-28 16:02:48] INFO  WEBrick::HTTPServer#start: pid=16997 port=30000
+</pre>
+<p>そして、以下にアクセスすると、簡易TODOアプリにアクセスできます。</p>
+<p><a class="reference external" href="http://192.168.0.10:30000/todoapp">http://192.168.0.10:30000/todoapp</a></p>
+</div>
+</div>
+<div class="section" id="id7">
+<h2>4.おわりに</h2>
+<p>導入は、あっさり終わりました。</p>
+<p>次はもう少し実用的な内容として、タブコンポーネントを実装しようと思います。</p>
+</div>
+</div>
+        <hr />
+    </div>
+		
+
+ 
+        
+
+ 
+
+    <div class='article'>
+        <a href="/sukuriputonomian-qiang-sono1-perlsmartcomments.html"><h2>スクリプトの勉強(その1) - perl(Smart::Comments)</h2></a>
+        <div class= "well small"> 月 23 11月 2015
+
+by <a class="url fn" href="/author/torofield.html">torofield</a>
+ 
+
+
+ </div>
+        <div class="summary"><div class="section" id="id1">
 <h2>はじめに</h2>
 <p>最近、仕事で、いろいろスクリプト(perl/python/ruby)を使用しています。</p>
 <p>昔々からスクリプト自体の言語文法は知っていたものの、まともに使うのは、
@@ -103,236 +279,9 @@ by <a class="url fn" href="/author/torofield.html">torofield</a>
 <p><a class="reference external" href="http://search.cpan.org/~neilb/Smart-Comments-1.06/lib/Smart/Comments.pm">Smart::Comments</a> とは、
 デバッグ用のコメント出力用のライブラリです。</p>
 <p>デバッグ用に、変数の内容をprint文出力するデバッグ(いわゆるprint文デバッグ)することは良くあります。</p>
-<p>そして、デバッグが終わった後、デバッグ文を消し忘れる、というのは良くあることです。
-しかも、デバック文自体再利用する羽目になることも時々あります。</p>
-<p>Smart::Commentsを利用すると、そこらへんがうまくいきます。
-以下のようなコードで、print文デバッグをすることができます。&quot;###&quot;というコメントに3つ連続(以上)記述すると開始します。</p>
-<pre class="literal-block">
-vi a.pl
-#!/usr/bin/perl
-use Smart::Comments;
-my $a=1;
-### $a
-(上記を保存)
-$ perl a.pl
-### $a: 1
-</pre>
-<p>そして、デバッグ文を消したければ、use Smart::Commentsをコメントアウトすればデバック文は消えます。
-(もともと#はコメントですし)</p>
-<p>なお、使用方法としては、use Smart::Comments;とするのではなく、以下のように起動時に
--MSmart::Commentsとする方法もあります。</p>
-<pre class="literal-block">
-perl -MSmart::Comments a.pl
-</pre>
-<p>いろいろ試した結果、自分的には、デバッグするときは、すぐに起動したいと思うようです。</p>
-<p>なので、ソースにuse Smart::Commentsを記述し、リリース時には</p>
-<pre class="literal-block">
-ag -f --perl | xargs perl -p -i -e's/^use Smart::Comments/#use Smart::Comments/g'
-</pre>
-<p>してSmart::Commentsをコメントアウトする方針にしています。</p>
-<p>なお余談ですが、agも便利なコマンドです。要するにgrepコマンドです。(説明は割愛)</p>
-</div>
-<div class="section" id="smart-comments-cpanm">
-<h2>修正前準備(Smart::Commentsのインストール(cpanm使用))</h2>
-<p>修正するライブラリをインストールする前に、cpanmをインストールします。
-プログラムひとつの、お手軽構成なので使用しています。</p>
-<p>インストールは以下の通りです。</p>
-<pre class="literal-block">
-curl -L http://cpanmin.us | perl - App::cpanminus
-</pre>
-<p>Smart::Commentsは、修正しやすいようにホームディレクトリにインストールします。</p>
-<pre class="literal-block">
-cpanm Smart::Comments -l ~/perl5
-</pre>
-<p>以下が実行時にローカルを見るよう、~/.bashrcに設定した環境変数です。</p>
-<pre class="literal-block">
-export PERL5LIB=&quot;/home/tanino/perl5/lib/perl5/x86_64-linux-gnu-thread-multi:/home/tanino/perl5/lib/perl5&quot;;
-export PATH=&quot;/home/tanino/perl5/bin:$PATH&quot;;
-</pre>
-</div>
-<div class="section" id="id4">
-<h2>Smart::Commentsへの追加仕様</h2>
-<p>勉強用の修正として、以下の仕様を追加します。</p>
-<pre class="literal-block">
-### &lt;trace&gt;
-### &lt;func&gt;
-</pre>
-<p>私は、デバッグをする際、処理の流れを見るため、関数名を出力することが良くあります。</p>
-<p>&lt;here&gt;などのログ出力場所(__FILE__,__LINE__)を出力する機能は既にありますが、関数名を出力する
-機能がありませんでしたので、追加しようと思います。</p>
-<p>&lt;trace&gt;は、3階層まで、呼び出し元を表示します。
-&lt;func&gt;は、呼び出している時点で処理している関数名を表示します。</p>
-</div>
-<div class="section" id="id5">
-<h2>Smart::Commentsの処理概要</h2>
-<p>追加するために、Smart::Commentsの処理を軽く見てみましょう。
-Smart::Commentsは、以下な感じで作られています。</p>
-<ol class="arabic">
-<li><dl class="first docutils">
-<dt>「ソースフィルタにより検索」</dt>
-<dd><p class="first last">ソースフィルタ(Filter::Simple)でソースを全検索。</p>
-</dd>
-</dl>
-</li>
-<li><dl class="first docutils">
-<dt>「内部関数に置換」</dt>
-<dd><p class="first last">$intro(設定により異なるが、主に&quot;###&quot;という文字列)を検索し、Smart::Comments::_Dump等の内部関数に置換</p>
-</dd>
-</dl>
-</li>
-<li><dl class="first docutils">
-<dt>「出力処理」</dt>
-<dd><p class="first last">置換した内部関数内でそれぞれの出力処理</p>
-</dd>
-</dl>
-</li>
-</ol>
-<p>上記理解のために、以下のようにデバッガで起動してみます。
-以下のように、a.plの6行目(&quot;### $a&quot;の部分)がSmart::Comments::_Dump関数に変更されていることがわかります。</p>
-<pre class="literal-block">
-$ perl -d a.pl
-
-Loading DB routines from perl5db.pl version 1.39_10
-Editor support available.
-
-Enter h or 'h h' for help, or 'man perldebug' for more help.
-
-main::(a.pl:5): my $a=1;
-  DB&lt;1&gt; c
-
-### $a: 1
- at /home/tanino/perl5/lib/perl5/Smart/Comments.pm line 481.
-        Smart::Comments::_Dump('pref', '$a:', 'var', 'ARRAY(0x2521be8)') called at a.pl line 6
-main::(a.pl:8): my &#64;b=('aa','bb','cc');
-</pre>
-</div>
-<div class="section" id="id6">
-<h2>実装</h2>
-<p>処理概要を踏まえ、以下のように実装しました。</p>
-<p>修正は、以下の意図で修正しています。</p>
-<ol class="arabic simple">
-<li>「内部関数置換」部に&quot;### &lt;trace&gt;&quot;の置換を追加(130行目付近)</li>
-<li>「出力処理」部(_Dump)に&lt;trace&gt;用処理を追加(439行目付近)</li>
-</ol>
-<p>パッチは以下の通りです。</p>
-<pre class="literal-block">
-*** /home/tanino/perl5/lib/perl5/Smart/Comments.pm  2015-10-25 06:29:34.000000000 +0900
---- Comments.pm     2015-11-23 11:17:52.068027644 +0900
-***************
-*** 18,23 ****
---- 18,24 ----
-  my $average_over       = 5;   # Number of time-remaining estimates to average
-  my $minfillreps        = 2;   # Minimum size of a fill and fill cap indicator
-  my $forupdatequantum   = 0.01;  # Only update every 1% of elapsed distance
-+ my $repeatcaller       = 4;
-
-  # Synonyms for asserts and requirements...
-  my $require = qr/require|ensure|assert|insist/;
-***************
-*** 129,134 ****
---- 130,139 ----
-      s{ ^ $hws* $intro $hws* (.+ [.]{3}) $hws* $ }
-       {Smart::Comments::_Dump(pref=&gt;qq{$1});$DBX}gmx;
-
-+     # Dump trace|func expression (the expression is not used as the label)...
-+     s{ ^ $hws* $intro $hws* &lt;(trace|func)&gt; $optcolon $hws* $ }
-+      {Smart::Comments::_DumpTrace(pref=&gt;q{$1:});$DBX}gmx;
-+
-      # Dump an unlabelled expression (the expression is used as the label)...
-      s{ ^ $hws* $intro $hws* (.*) $optcolon $hws* $ }
-       {Smart::Comments::_Dump(pref=&gt;q{$1:},var=&gt;Smart::Comments::_quiet_eval(q{[$1]}));$DBX}gmx;
-***************
-*** 482,487 ****
---- 487,516 ----
-      $prev_STDOUT = tell(*STDOUT);
-  }
-
-+ #for trace/func
-+ sub _DumpTrace {
-+     my %args = &#64;_;
-+     my ($pref) = &#64;args{qw(pref)};
-+
-+   my &#64;fc = ();
-+     for ( my $i = 1 ; $i &lt; $repeatcaller ; $i++ ) {
-+         my (undef, undef, undef, $func) = caller($i);
-+         push(&#64;fc,$func) if defined $func;
-+     }
-+     my (undef, $file, $line) = caller;
-+     my $f = $fc[0] // '';
-+     my $t = &quot; trace:\n###   &quot; . join(&quot;\n###   &quot;,reverse(&#64;fc)) ;
-+     $pref =~ s/(?:func)/&quot;$f&quot;, &quot;$file&quot;, line $line/g;
-+     $pref =~ s/(?:trace)/$t &quot;$file&quot; , line $line/g;
-+
-+   $pref =~ s/:$//;
-+     print STDERR &quot;\n&quot;;
-+     warn &quot;### $pref\n&quot;;
-+     $prev_STDOUT = tell(*STDOUT);
-+     $prev_STDERR = tell(*STDERR);
-+     return;
-+ }
-+
-  1; # Magic true value required at end of module
-  __END__
-</pre>
-</div>
-<div class="section" id="id7">
-<h2>動作確認</h2>
-<p>以下のコード(s.pl)で動作確認しました。</p>
-<pre class="literal-block">
-#!/usr/bin/perl
-
-package TEST;
-
-use strict;
-use warnings;
-
-use Smart::Comments;
-
-foo();
-
-sub foo {
-  bar();
-}
-
-sub bar {
-  baz();
-}
-
-sub baz {
-
-    ### &lt;trace&gt;
-    ### &lt;func&gt;
-}
-
-### &lt;trace&gt;
-### &lt;func&gt;
-</pre>
-<p>動作結果は以下の通りです。</p>
-<pre class="literal-block">
-$ perl s.pl
-
-###  trace:
-###   TEST::foo
-###   TEST::bar
-###   TEST::baz &quot;s.pl&quot; , line 22
-### &quot;TEST::baz&quot;, &quot;s.pl&quot;, line 23
-
-###  trace:
-###    &quot;s.pl&quot; , line 26
-### &quot;&quot;, &quot;s.pl&quot;, line 27
-</pre>
-</div>
-<div class="section" id="id8">
-<h2>まとめ</h2>
-<p>なんらかの目的で修正している方が、ただソースを眺めるよりは勉強になったような気がします。</p>
-<p>この「とりあえず修正してみる」方法の場合、あまりに難しい修正内容にすると、実装できず勉強にならない場合があるのですが
-今回は、あっさり実装できてよかったです。</p>
-<p>また、ネタを見つけたら書いてみたいと思います。</p>
-</div>
-</div>
-        <hr />
-    </div>
-		
+<p>そして ...</p></div> <a class="btn btn-info xsmall" href="/sukuriputonomian-qiang-sono1-perlsmartcomments.html">read more</a></div>
+    </div>	
+				
 
  
         
@@ -772,6 +721,7 @@ $ /usr/sbin/td-agent-gem install fluent-plugin-elasticsearch fluent-plugin-dstat
                 Categories
                 </li>
                 
+                <li><a href="/category/javascript-vuejs-clientjavascript.html">javascript vuejs clientjavascript</a></li>
                 <li><a href="/category/mojolicious-xml-rpc-plugin.html">Mojolicious XML-RPC Plugin</a></li>
                 <li><a href="/category/monitoring-dataanalysys.html">monitoring dataanalysys</a></li>
                 <li><a href="/category/python-perl-javascript.html">python perl javascript</a></li>
